@@ -1,0 +1,275 @@
+---
+title: "Feature Selection and a Wrapper Naive Bayes Classifier"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+
+## Warm-Up
+
+```{r}
+library(tidyverse)
+library(viridis)
+library(reshape2)
+library(naivebayes)
+```
+
+```{r}
+mushrooms <- read.csv("https://archive.ics.uci.edu/ml/machine-learning-databases/mushroom/agaricus-lepiota.data",
+                      header = FALSE, sep = ",", dec = ".", na.strings = c("?"))
+mushrooms_with_var_names <- read.csv("https://archive.ics.uci.edu/ml/machine-learning-databases/mushroom/agaricus-lepiota.data",
+                                     header = FALSE, sep = ",", dec = ".", na.strings = c("?"),
+                                     col.names = c("class", "cap_shape", "cap_surface", "cap_color", "bruises", "odor",
+                                                   "gill_attachment", "gill_spacing", "gill_size", "gill_color", "stalk_shape",
+                                                   "stalk_root", "stalk_surface_above_ring", "stalk_surface_below_ring",
+                                                   "stalk_color_above_ring", "stalk_color_below_ring", "veil_type", "veil_color",
+                                                   "ring_number", "ring_type","spore_print_color", "population", "habitat"))
+```
+
+**Data Dictionary**
+
+| No  | Feature Name             | Possible Values                                                                                                                      |
+|-------------------|------------------------|------------------------------|
+| 1   | cap-shape                | bell = b, conical = c, convex = x, flat = f, knobbed = k, sunken = s                                                                 |
+| 2   | cap-surface              | fibrous = f, grooves = g, scaly = y, smooth = s                                                                                      |
+| 3   | cap-color                | brown = n, buff = b, cinnamon = c, gray = g, green = r, pink = p, purple = u, red = e, white = w, yellow = y                         |
+| 4   | bruises                  | bruises = t, no = f                                                                                                                  |
+| 5   | odor                     | almond = a, anise = l, creosote = c, fishy = y, foul = f, musty = m, none = n, pungent = p, spicy = s                                |
+| 6   | gill-attachment          | attached = a, descending = d, free = f, notched = n                                                                                  |
+| 7   | gill-spacing             | close = c, crowded = w, distant = d                                                                                                  |
+| 8   | gill-size                | broad = b, narrow = n                                                                                                                |
+| 9   | gill-color               | black = k, brown = n, buff = b, chocolate = h, gray = g, green = r, orange = o, pink = p, purple = u, red = e, white = w, yellow = y |
+| 10  | stalk-shape              | enlarging = e, tapering = t                                                                                                          |
+| 11  | stalk-root               | bulbous = b, club = c, cup = u, equal = e, rhizomorphs = z, rooted = r, missing = ?                                                  |
+| 12  | stalk-surface-above-ring | fibrous = f, scaly = y, silky = k, smooth = s                                                                                        |
+| 13  | stalk-surface-below-ring | fibrous = f, scaly = y, silky = k, smooth = s                                                                                        |
+| 14  | stalk-color-above-ring   | brown = n, buff = b, cinnamon = c, gray = g, orange = o, pink = p, red = e, white = w, yellow = y                                    |
+| 15  | stalk-color-below-ring   | brown = n, buff = b, cinnamon = c, gray = g, orange = o, pink = p, red = e, white = w, yellow = y                                    |
+| 16  | veil-type                | partial = p, universal = u                                                                                                           |
+| 17  | veil-color               | brown = n, orange = o, white = w, yellow = y                                                                                         |
+| 18  | ring-number              | none = n, one = o, two = t                                                                                                           |
+| 19  | ring-type                | cobwebby = c, evanescent = e, flaring = f, large = l, none = n, pendant = p, sheathing = s, zone = z                                 |
+| 20  | spore-print-color        | black = k, brown = n, buff = b, chocolate = h, green = r, orange = o, purple = u, white = w, yellow = y                              |
+| 21  | population               | abundant = a, clustered = c, numerous = n, scattered = s, several = v, solitary = y                                                  |
+| 22  | habitat                  | grasses = g, leaves = l, meadows = m, paths = p, urban = u, waste = w, woods = d                                                     |
+
+```{r}
+head(mushrooms)
+glimpse(mushrooms)
+```
+
+```{r}
+mushrooms %>% 
+  ggplot(aes(x = V1)) +
+  geom_bar(stat = "count", fill = "seagreen") +
+  scale_x_discrete(labels = c("Edible", "Poisonous")) +
+  labs(x = "Class", y = "Count", title = "Mushroom counts by edibility class") +
+  theme_classic()
+```
+
+```{r}
+mushrooms_long <- mushrooms_with_var_names %>% 
+  pivot_longer(cols = everything(), names_to = "variable") %>% 
+  arrange(variable)
+# temporarily convert NA to character value
+mushrooms_long$value[is.na(mushrooms_long$value)] <- '?'
+
+mushrooms_long %>% 
+  filter(variable != "class") %>%
+  ggplot(aes(x = value, fill = value)) +
+  geom_bar(stat = "count") +
+  facet_wrap(~ variable, ncol = 11, scales = "free") +
+  labs(x = NULL, y = NULL, title = "Mushroom counts by categorical predictor value") +
+  scale_fill_viridis_d(name = "Value") +
+  theme_classic() +
+  theme(panel.border = element_rect(linetype = "dashed", colour = "gray", fill = NA),
+        legend.position = "none")
+```
+
+Both these plots are very informative. The first indicates that we have a (rare) situation in which the outcome classes are almost perfectly balanced; that is, there are nearly equal numbers of observations in both classes. The second indicates that the numbers of unique values in each predictor varies, that V12 / *stalk_root* is the only category with a missing values (2,480 in total) and V17 / *veil_type* contains values of only a single class. Observing the different facets, it's also obvious that in some cases the distribution is dominated by one or two values but it's more evenly distributed in other cases.
+
+```{r}
+# split the data into a training and test set
+set.seed(0)
+no_observations <- dim(mushrooms)[1] # No. observations (8124)
+no_predictors <- dim(mushrooms)[2] - 1 # No. predictors (22) = No. variables (23) - dependent var. (1st column)
+test_index <- sample(no_observations, size = as.integer(no_observations * 0.2), replace = FALSE) # 20% data for test
+training_index <- -test_index # Remaining 80% data observations for training
+
+# train the model
+NaiveBayesModel <- naive_bayes(V1 ~. , data = mushrooms[training_index, ])
+
+# predict the class of the test set
+pred_class <- predict(NaiveBayesModel, newdata = mushrooms[test_index, ])
+tab <- table(pred_class, mushrooms[test_index, "V1"])
+accuracy <- sum(diag(tab)) / sum(tab)
+error <- 1 - accuracy
+
+paste0("Prediction results on the test set: ")
+tab
+paste0("Accuracy on the test set is: ", round(accuracy, 4) * 100, "%")
+paste0("Error on the test set is: ", round(error, 4) * 100, "%")
+```
+
+```{r}
+# repeat for 10 different splits of the data and average the results
+error <- 0
+for (i in 1:10){
+  print(i)
+  test_index <- sample(no_observations, size = as.integer(no_observations * 0.2), replace = FALSE)
+  # 20% data for test
+  training_index <- -test_index # Remaining 80% data observations for training
+
+  NaiveBayesModel <- naive_bayes(V1 ~. , data = mushrooms[training_index, ])
+  pred_class <- predict(NaiveBayesModel, newdata = mushrooms[test_index, ])
+
+  tab <- table(pred_class, mushrooms[test_index,"V1"])
+  print(accuracy <- sum(diag(tab)) / sum(tab))
+  print(error <- error + (1 - accuracy))
+}
+paste0("Average error on the test set is: ", round(error / 10, 4) * 100, "%")
+all_features_error <- error
+```
+
+## Main Activity
+
+**Objective**: Can we achieve similar or better classification performance with a simpler classifier by removing irrelevant and/or redundant predictors via feature selection?
+
+The aim of this exercise was to develop a forward stepwise feature selection algorithm from scratch, which was itself wrapped around a Naive Bayes classification algorithm. Essentially, the algorithm works by:
+
+1.  adding the features one at a time to a dataframe containing just the outcome variable
+2.  fitting a Naive Bayes model to a random 80% subsample of the data and making predictions on the other 20%
+3.  repeating that for a given number of iterations
+4.  calculating the average missclassification error
+5.  finding the feature with the lowest average missclassification error and permanently adding that feature to the dataframe containing just the outcome variable
+6.  repeating the whole process with the new dataframe until there are no more features left i.e. we're back up to fitting a model with all predictors.
+
+This is the *prune later* stopping criterion, which continues adding features even if classification performance decreases. The alternative is to use a *stop early* criterion in which the feature selection stops when the missclassification error of the current best model under consideration is worse than that of the previous best model.
+
+```{r setup}
+set.seed(0)
+num_obs <- dim(mushrooms_with_var_names)[1]
+num_features <- dim(mushrooms_with_var_names)[2] - 1
+
+# initialise variables
+base_error <- 1
+base_accuracy <- 0
+iteration_idx <- 0
+best_feature <- NULL
+selected_feature_list <- c()
+error_list <- c()
+
+# dataframe with just the features
+available_features <- mushrooms_with_var_names %>% dplyr::select(-class)
+# dataframe with just the outcome column
+selected_features <- mushrooms_with_var_names %>% dplyr::select(class)
+```
+
+```{r feature_selection, cache=TRUE}
+# Note that every couple of iterations this code seems to hang for some unknown reason. Just ask re-run the code to re-start it from where it left off.
+
+# while there are still features available
+while (length(names(available_features)) > 0) {
+  # determine the initial average classification error for each of the available features
+  base_error <- 1
+  
+  error_df <- data.frame(matrix(ncol = 3, nrow = 0))
+  df_colnames <- c("feature_no", "feature_name", "error")
+  colnames(error_df) <- df_colnames
+  
+  for (j in 1:length(names(available_features))) {
+    # identify the feature
+    feature <- names(available_features)[j]
+  
+    # add feature to the dataframe with the selected features (initially just the outcome column)
+    temp_feature <- selected_features
+    temp_feature <- cbind(available_features[feature], temp_feature)
+  
+    # initialise/reset the performance metrics and number of iterations
+    error <- 0
+    mean_error <- 0
+    num_iter <- 10
+  
+    # split the data into a train and test set, train the model and calculate the average error num_iter times
+    for (i in 1:num_iter) {
+      # determine the train and test indices
+      test_idx <- sample(num_obs, size = as.integer(num_obs * 0.2), replace = FALSE)
+      train_idx <- -test_idx
+      
+      # train the model and obtain test set predictions
+      NaiveBayesModel <- naive_bayes(class ~ ., data = temp_feature[train_idx, ])
+      pred_class <- predict(NaiveBayesModel, newdata = temp_feature[test_idx, ])
+      
+      # determine performance
+      pred_tab <- table(pred_class, mushrooms_with_var_names[test_idx, "class"])
+      accuracy <- sum(diag(pred_tab)) / sum(pred_tab)
+      error <- error + (1 - accuracy)
+    }
+    # calculate the average error over all iterations
+    mean_error <- error # / num_iter
+  
+    # determine the feature with the best performance
+    # save the feature number, name and average error
+    error_df[j, 1] <- as.numeric(j)
+    error_df[j, 2] <- feature
+    error_df[j, 3] <- mean_error
+    # locate the feature with the lowest error
+    lowest_error_idx <- which.min(error_df$error)
+    error_val <- min(error_df$error)
+    best_feature <- error_df[error_df$feature_no == lowest_error_idx, ]$feature_name
+  }
+    
+  # add feature to the list of selected features
+  selected_features <- cbind(available_features[best_feature], selected_features)
+  selected_feature_list <- append(selected_feature_list, best_feature)
+  print("Selected feature list: ")
+  print(selected_feature_list)
+  print("Missclassification error: ")
+  print(error_val)
+  # and remove it from the list of available features
+  available_features <- available_features %>% dplyr::select(-best_feature)
+  
+  # add missclassification error to the list of errors
+  error_list <- append(error_list, error_val)
+  
+  print(paste0("Number of features remaining: ", dim(available_features)[2]))
+}
+```
+
+```{r}
+# put the results into a dataframe and add the full model results from the warm-up
+results_df <- data.frame(feature_order = 1:22,
+                         feature_added = selected_feature_list,
+                         error = error_list) %>% 
+  mutate(error_diff = error - lag(error))
+# results_df <- bind_rows(results_df, c(feature_order = 22, feature_added = "all features", 
+#                                       error = all_features_error, error_diff = NA))
+results_df <- results_df %>% mutate(
+  prop_error = error / feature_order,
+  error_diff_prop = prop_error - lag(prop_error))
+results_df
+```
+
+```{r}
+#results_df$feature_added <- as.factor(results_df$feature_added)
+results_df$feature_added <- factor(results_df$feature_added, levels = selected_feature_list)
+
+results_df_long <- pivot_longer(results_df, error:error_diff_prop, names_to = "error_var")
+
+results_df_long %>% 
+  filter(error_var != "error_diff") %>% 
+  filter(error_var != "error_diff_prop") %>%
+  ggplot(aes(x = feature_added, y = value, fill = value)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ error_var, ncol = 2, scales = "free_y") +
+  labs(x = NULL, y = NULL,
+       title = "Feature selection missclassification errors by feature",
+       subtitle = "In order of added feature") +
+  theme_classic() +
+  theme(panel.border = element_rect(linetype = "dashed", colour = "gray", fill = NA),
+        legend.position = "none",
+        axis.text.x = element_text(angle = 90))
+```
+
+The left panel of the chart displays the average error of the best Naive Bayes model as the number of features increases by one each time. The x-axis displays the name of the feature that was added at the time. The right panel of the chart displays that error relative to the number of features in the model. It indicates that whilst smaller numbers of terms were much better in absolute terms until the last 19 or so (*stalk colour below ring* and after), the relative error was much higher at the start and quickly declined to a minimum at around 16 features (*gill attachment*) before starting to increase again for the final six models.
