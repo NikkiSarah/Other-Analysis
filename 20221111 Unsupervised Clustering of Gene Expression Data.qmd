@@ -1,0 +1,345 @@
+---
+title: "Unsupervised Clustering of Gene-Expression Micro-Array Data"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(foreign)
+library(tidyverse)
+library(dendextend)
+library(dbscan)
+```
+
+### Part 1: Clustering cancerous tissue samples
+
+This first part considers the problem of clustering tissue samples based on their gene expression levels. It is a relevant problem in bioinformatics as it can help with the discovery of different subtypes of cancer. Whilst the dataset used actually contains the class labels, these will be set aside and used only for external assessment of the results.
+
+```{r}
+golub_data <- read.arff("golub-1999.arff")
+dim(golub_data)
+
+# separate the gene levels from the classes
+genes <- golub_data[1:1868]
+leukemia_class <- golub_data[1869]
+
+leukemia_class %>% 
+  ggplot(aes(x = Classe)) +
+  geom_bar(stat = "count", fill = "seagreen") +
+  scale_x_discrete(labels = c("ALL", "AML")) +
+  labs(x = "Class", y = "Count", title = "Patient counts by leukemia sub-type") +
+  theme_classic()
+```
+
+```{r distance_matrix}
+# generate the pairwise euclidean distance matrix
+dist_mat <- dist(genes, method = "euclidean")
+# check the result is of the correct type
+class(dist_mat)
+```
+
+```{r raw_data_clustering}
+cluster_colours <- ifelse(leukemia_class == 1, "seagreen", "grey")
+
+SL <- hclust(dist_mat, method = "single")
+SL_dend <- SL %>% as.dendrogram()
+
+SL_dend %>% 
+  set("labels_col", value = c("grey", "seagreen"), k = 2) %>% 
+  set("branches_k_color", value = c("grey", "seagreen"), k = 2) %>% 
+  plot(main = "Single Linkage")
+abline(h = 42000, lty = 2)
+colored_bars(colors = cluster_colours, dend = SL_dend, rowLabels = "Classe")
+
+
+CL <- hclust(dist_mat, method = "complete")
+CL_dend <- CL %>% as.dendrogram()
+
+CL_dend %>% 
+  set("labels_col", value = c("seagreen", "grey"), k = 2) %>% 
+  set("branches_k_color", value = c("seagreen", "grey"), k = 2) %>% 
+  plot(main = "Complete Linkage")
+abline(h = 70000, lty = 2)
+colored_bars(colors = cluster_colours, dend = CL_dend, rowLabels = "Classe")
+
+
+AL <- hclust(dist_mat, method = "average")
+AL_dend <- AL %>% as.dendrogram()
+
+AL_dend %>% 
+  set("labels_col", value = c("grey", "seagreen"), k = 2) %>% 
+  set("branches_k_color", value = c("grey", "seagreen"), k = 2) %>% 
+  plot(main = "Average Linkage")
+abline(h = 52000, lty = 2)
+colored_bars(colors = cluster_colours, dend = AL_dend, rowLabels = "Classe")
+
+
+Ward <- hclust(dist_mat, method = "ward.D2")
+Ward_dend <- Ward %>% as.dendrogram()
+
+Ward_dend %>% 
+  set("labels_col", value = c("grey", "seagreen"), k = 2) %>% 
+  set("branches_k_color", value = c("grey", "seagreen"), k = 2) %>% 
+  plot(main = "Ward's Method")
+abline(h = 125000, lty = 2)
+colored_bars(colors = cluster_colours, dend = Ward_dend, rowLabels = "Classe")
+```
+
+```{r}
+SL_groups <- cutree(SL, k = 2)
+CL_groups <- cutree(CL, k = 2)
+AL_groups <- cutree(AL, k = 2)
+Ward_groups <- cutree(Ward, k = 2)
+
+cluster_results <- cbind(leukemia_class, SL_groups, CL_groups, AL_groups, Ward_groups)
+```
+
+The dendrogram visualisations indicate that the best hierarchical clustering method for this data is Ward's Method, with average linkage and complete linkage coming in equal second. Single linkage was clearly unsuitable given that it put all cases except one into a single cluster. Ward's method was the most suitable as it was able to correctly classify all but 4 of the observations, and complete linkage and average linkage missclassified 10 and 17 observations respectively.
+
+The analysis will now be repeated with data that has been normalised to have a mean of zero and a standard deviation of one. The decision of whether to normalise data in unsupervised clustering problems is a non-trivial one as there is usually no ground truth to help assess the impact on performance. On the one hand, it may prevent variables with wider ranges of values dominating distance computations, but it may also distort clusters by removing natural differences in variance that help characterise them as clusters.
+
+```{r normalised_data_clustering}
+genes_standardised <- as.data.frame(scale(genes))
+# generate the pairwise euclidean distance matrix
+dist_mat <- dist(genes_standardised, method = "euclidean")
+
+SL <- hclust(dist_mat, method = "single")
+SL_dend <- SL %>% as.dendrogram()
+
+SL_dend %>% 
+  set("labels_col", value = c("grey", "seagreen"), k = 2) %>% 
+  set("branches_k_color", value = c("grey", "seagreen"), k = 2) %>% 
+  plot(main = "Single Linkage")
+abline(h = 73, lty = 2)
+colored_bars(colors = cluster_colours, dend = SL_dend, rowLabels = "Classe")
+
+
+CL <- hclust(dist_mat, method = "complete")
+CL_dend <- CL %>% as.dendrogram()
+
+CL_dend %>% 
+  set("labels_col", value = c("seagreen", "grey"), k = 2) %>% 
+  set("branches_k_color", value = c("seagreen", "grey"), k = 2) %>% 
+  plot(main = "Complete Linkage")
+abline(h = 97, lty = 2)
+colored_bars(colors = cluster_colours, dend = CL_dend, rowLabels = "Classe")
+
+
+AL <- hclust(dist_mat, method = "average")
+AL_dend <- AL %>% as.dendrogram()
+ 
+AL_dend %>%
+  set("labels_col", value = c("grey", "seagreen"), k = 2) %>%
+  set("branches_k_color", value = c("grey", "seagreen"), k = 2) %>%
+  plot(main = "Average Linkage")
+abline(h = 84, lty = 2)
+colored_bars(colors = cluster_colours, dend = AL_dend, rowLabels = "Classe")
+
+
+Ward <- hclust(dist_mat, method = "ward.D2")
+Ward_dend <- Ward %>% as.dendrogram()
+
+Ward_dend %>%
+  set("labels_col", value = c("seagreen", "grey"), k = 2) %>% 
+  set("branches_k_color", value = c("seagreen", "grey"), k = 2) %>% 
+  plot(main = "Ward's Method")
+abline(h = 117, lty = 2)
+colored_bars(colors = cluster_colours, dend = Ward_dend, rowLabels = "Classe")
+```
+
+```{r}
+SL_groups <- cutree(SL, k = 2)
+CL_groups <- cutree(CL, k = 2)
+AL_groups <- cutree(AL, k = 2)
+Ward_groups <- cutree(Ward, k = 2)
+
+cluster_results2 <- cbind(leukemia_class, SL_groups, CL_groups, AL_groups, Ward_groups)
+```
+
+It is very clear that in this case, the normalisation had an adverse effect on the clustering algorithms. Even if the true labels were unknown, all methods placed only a handful of observations into the smaller class.
+
+### Part 2: Clustering yeast genes
+
+This second part considers the problem of clustering genes according to their gene-expression levels across different conditions in a controlled experiment. The goal is to identify genes that show different expression patterns over a wide range of experimental conditions. It is a relevant problem in bioinformatics as it can help identify genes that share the same regulatory mechanisms or functions in an organism. Whilst the dataset used actually contains the class labels, these will be set aside and used only for external assessment of the results.
+
+```{r}
+yeast_data <- read.arff("yeast.arff")
+dim(yeast_data)
+
+# separate the gene levels from the functional categories
+genes <- yeast_data[1:20]
+functional_category <- yeast_data[21]
+
+functional_category %>% 
+  ggplot(aes(x = Classe)) +
+  geom_bar(stat = "count", fill = "seagreen") +
+  labs(x = "Functional category", y = "Count", title = "Yeast counts by functional co-regulated gene category") +
+  theme_classic()
+```
+
+```{r}
+# generate the pairwise pearson similarity matrix
+# need to transpose the matrix else we'll be comparing the columns and not the observations
+sim_mat <- cor(t(genes), method = "pearson")
+dissim_mat <- (1 - sim_mat)/2
+
+# check that the conversion has been done correctly
+min(sim_mat)
+max(sim_mat)
+
+min(dissim_mat)
+max(dissim_mat)
+
+# obtain the distance matrix
+dist_mat <- dist(dissim_mat)
+```
+
+```{r}
+cluster_colours <- ifelse(functional_category == "cluster1", "seagreen",
+                          ifelse(functional_category == "cluster2", "grey",
+                                 ifelse(functional_category == "cluster3", "darkcyan", "blue")))
+
+SL <- hclust(dist_mat, method = "single")
+SL_dend <- SL %>% as.dendrogram()
+
+SL_dend %>% 
+  set("labels_cex", 0.5) %>% 
+  set("labels_col", value = c("seagreen", "grey", "blue", "darkcyan"), k = 4) %>%
+  set("branches_k_color", value = c("seagreen", "grey", "blue", "darkcyan"), k = 4) %>%
+  plot(main = "Single Linkage")
+abline(h = 1.7, lty = 2)
+colored_bars(colors = cluster_colours, dend = SL_dend, rowLabels = "Classe")
+
+
+CL <- hclust(dist_mat, method = "complete")
+CL_dend <- CL %>% as.dendrogram()
+
+CL_dend %>% 
+  set("labels_col", value = c("seagreen", "blue", "grey", "darkcyan"), k = 4) %>% 
+  set("branches_k_color", value = c("seagreen", "blue", "grey", "darkcyan"), k = 4) %>% 
+  plot(main = "Complete Linkage")
+abline(h = 4.9, lty = 2)
+colored_bars(colors = cluster_colours, dend = CL_dend, rowLabels = "Classe")
+
+
+AL <- hclust(dist_mat, method = "average")
+AL_dend <- AL %>% as.dendrogram()
+
+AL_dend %>% 
+  set("labels_col", value = c("seagreen", "grey", "darkcyan", "blue"), k = 4) %>% 
+  set("branches_k_color", value = c("seagreen", "grey", "darkcyan", "blue"), k = 4) %>% 
+  plot(main = "Average Linkage")
+abline(h = 4, lty = 2)
+colored_bars(colors = cluster_colours, dend = AL_dend, rowLabels = "Classe")
+
+
+Ward <- hclust(dist_mat, method = "ward.D2")
+Ward_dend <- Ward %>% as.dendrogram()
+
+Ward_dend %>% 
+  set("labels_col", value = c("seagreen", "darkcyan", "blue", "grey"), k = 4) %>% 
+  set("branches_k_color", value = c("seagreen", "darkcyan", "blue", "grey"), k = 4) %>% 
+  plot(main = "Ward's Method")
+abline(h = 10, lty = 2)
+colored_bars(colors = cluster_colours, dend = Ward_dend, rowLabels = "Classe")
+```
+
+```{r}
+SL_groups <- cutree(SL, k = 4)
+CL_groups <- cutree(CL, k = 4)
+AL_groups <- cutree(AL, k = 4)
+Ward_groups <- cutree(Ward, k = 4)
+
+cluster_results <- cbind(functional_category, SL_groups, CL_groups, AL_groups, Ward_groups)
+```
+
+The dendrogram visualisations indicate that the only method that performed quite badly is Average Linkage. All the others made the same number of mistakes and in roughly the same places; that is, missclassifying three observations from cluster 2 as either cluster 3 or cluster 4 and missclassifying one observation from cluster 4 into cluster 3.
+
+### Part 3: Clustering yeast genes - HDBSCAN
+
+This third and final part considers the performance of a density-based clustering algorithm. These algorithms are appropriate for the yeast dataset as it has only moderate dimensionality (20 dimensions) compared to the leukemia data, which contained very high-dimensionality.
+
+```{r}
+# apply Euclidean distance normalisation such that each row is a unit vector with magnitude one
+euclidean_normalisation = function(x) {
+  x / sqrt(sum(x^2))
+}
+
+genes_scaled = t(apply(genes, 1, euclidean_normalisation))
+
+# double-check a random row sums to one
+x <- runif(1, min = 1, max = dim(genes)[1])
+sqrt(sum(genes_scaled[x,]^2)) == 1
+
+# run HDBSCAN on the rescaled data with MinPts = 5
+dbs_groups <- hdbscan(genes_scaled, minPts = 5)
+dbs_groups
+
+# plot the results
+cluster_colours <- ifelse(functional_category == "cluster1", "seagreen",
+                          ifelse(functional_category == "cluster2", "grey",
+                                 ifelse(functional_category == "cluster3", "darkcyan", "blue")))
+
+dbs_dend <- dbs_groups$hc %>% as.dendrogram()
+plot(dbs_groups$hc, main = "HDBSCAN", hang = -1, labels = dbs_groups$cluster)
+colored_bars(colors = cluster_colours, dend = dbs_dend, rowLabels = "Classe")
+
+cluster_results <- cbind(functional_category, dbs_groups$cluster)
+cont_tab <- table(cluster_results$Classe, cluster_results$`dbs_groups$cluster`)
+cont_tab
+```
+
+The contingency table indicates that the functional category cluster1 is made up exclusively of the derived fourth cluster, functional category cluster2 is a mix of clusters 3 and 4, functional category cluster3 is made up exclusively of cluster 2 observations and functional category cluster4 is made up exclusively of cluster 1 observations.
+
+Cluster 0 is the the cluster containing observations labelled as noise or outliers. It is made up almost exclusively of observations actually belonging to the third functional category (55 out of the 59 observations in that group), with a small handful belonging to functional categories 2 and 4.
+
+```{r}
+# genes plotted according to their functional category
+genes_scaled_df <- genes_scaled %>% 
+  as_tibble() %>% 
+  mutate(Classe = functional_category$Classe,
+         row_num = seq(1, nrow(genes_scaled)))
+
+genes_scaled_long <- pivot_longer(genes_scaled_df, cols = starts_with("atr"),
+                                  names_to = "variable", names_prefix = "atr") %>% 
+  mutate(across(where(is.character), as.numeric))
+
+genes_scaled_long %>% 
+  ggplot(aes(x = variable, y = value, group = row_num, col = Classe)) +
+  geom_line() +
+  facet_wrap(~Classe, ncol = 2, scales = "free") +
+  scale_color_manual(values = c("cluster1" = "seagreen", "cluster2" = "grey",
+                                "cluster3" = "darkcyan", "cluster4" = "blue")) +
+  scale_x_continuous(breaks = seq(-1, 20, 2)) +
+  guides(colour = "none") +
+  labs(title = "Genes facetted by their functional category") +
+  theme_classic()
+
+# genes plotted according to their HDBSCAN classification excluding those labelled
+  # as outliers/noise
+genes_scaled_df <- genes_scaled %>% 
+  as_tibble() %>% 
+  mutate(cluster = dbs_groups$cluster,
+         row_num = seq(1, nrow(genes_scaled))) %>% 
+  filter(cluster != 0)
+
+genes_scaled_long <- pivot_longer(genes_scaled_df, cols = starts_with("atr"),
+                                  names_to = "variable", names_prefix = "atr") %>% 
+  mutate(across("variable", as.numeric),
+         across("cluster", as.character))
+
+genes_scaled_long %>% 
+  ggplot(aes(x = variable, y = value, group = row_num, col = cluster)) +
+  geom_line() +
+  facet_wrap(~cluster, ncol = 2, scales = "free") +
+  scale_color_manual(values = c("1" = "blue", "2" = "darkcyan",
+                                "3" = "grey", "4" = "seagreen")) +
+  scale_x_continuous(breaks = seq(-1, 20, 2)) +
+  guides(colour = "none") +
+  labs(title = "Genes facetted by their HDBSCAN category and coloured based on the cluster's functional category") +
+  theme_classic()
+```
+
+A comparison of the two sets of figures above indicates that the genes in each cluster found by HDBSCAN correspond reasonably well to the associated functional category in the ground truth. Furthermore, the lines in the second facetted plot for clusters 2 and 3, which were the source of most of the observations marked as outliers/noise are more tightly grouped together and the prevailing trend is much clearer. This indicates that the genes identified by the clustering algorithm are likely outliers in truth.
