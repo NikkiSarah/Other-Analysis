@@ -1,0 +1,358 @@
+---
+title: "Unsupervised Outlier Detection"
+author: "NikkiSarah"
+date: "2022-11-12"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+## {.tabset}
+
+```{r setup}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(dbscan)
+library(tidyverse)
+```
+
+### KNN Outlier Algorithm
+
+This is a very simple and often effective method that assigns the distance of an observation to its kth nearest neighbours as a measure of its 'outlierness'. The idea is that observations within a cluster will be close to their nearest neighbours, whereas observations slightly apart from a cluster will be further away from their nearest neighbours.
+
+```{r KNN_outlier}
+set.seed(0)
+x11 <- rnorm(n = 100, mean = 10, sd = 1) # Cluster 1 (x1 coordinate)
+x21 <- rnorm(n = 100, mean = 10, sd = 1) # Cluster 1 (x2 coordinate)
+x12 <- rnorm(n = 100, mean = 20, sd = 1) # Cluster 2 (x1 coordinate)
+x22 <- rnorm(n = 100, mean = 10, sd = 1) # Cluster 2 (x2 coordinate)
+x13 <- rnorm(n = 100, mean = 15, sd = 3) # Cluster 3 (x1 coordinate)
+x23 <- rnorm(n = 100, mean = 25, sd = 3) # Cluster 3 (x2 coordinate)
+x14 <- rnorm(n = 50, mean = 25, sd = 1)  # Cluster 4 (x1 coordinate)
+x24 <- rnorm(n = 50, mean = 25, sd = 1)  # Cluster 4 (x2 coordinate)
+
+dat <- data.frame(x1 = c(x11,x12,x13,x14), x2 = c(x21,x22,x23,x24))
+
+( g0a <- ggplot(dat, aes(x = x1, y = x2)) + 
+    geom_point(shape = 19) +
+    ggtitle("Figure 1: Four clusters following multi-normal distributions") +
+    theme_classic() )
+
+# KNN outlier scores
+k <- 4
+KNN_outlier <- kNNdist(x = dat, k = k, all = TRUE)[, k]
+
+top_n <- 10
+rank_KNN_outliers <- order(x = KNN_outlier, decreasing = TRUE)
+KNN_result <- data.frame(ID = rank_KNN_outliers, score = KNN_outlier[rank_KNN_outliers])
+head(KNN_result, top_n)
+
+# plot the top 20 outliers
+top_n <- 20
+( g1 <- g0a +
+    geom_point(data = dat[rank_KNN_outliers[1:top_n],], aes(x = x1, y = x2),
+               shape = 19, colour = "seagreen", size = 2) +
+    geom_text(data = dat[rank_KNN_outliers[1:top_n],],
+              aes(x = (x1-0.5), y = x2, label = rank_KNN_outliers[1:top_n]),
+              size = 2.5) +
+    ggtitle("Figure 2: Top 20 KNN outliers (k = 4) - coloured green and labelled") )
+
+# plot each observation with a circle whose radius is proportional to its outlier score
+g0b <- ggplot(dat, aes(x = x1, y = x2)) + 
+  geom_point(shape = 19, size = 0.1) +
+  theme_classic()
+( g2 <- g0b +
+    geom_point(dat, mapping = aes(x = x1, y = x2, size = KNN_outlier),
+               shape = 1, color = "seagreen") +
+    scale_size_continuous(range = c(0.1, 20)) +
+    guides(size = "none") +
+    ggtitle("Figure 3: KNN outliers (k = 4) with circle radii proportional to the outlier scores")
+  )
+```
+
+The weighted KNN outlier method is a variant that computes the outlier score as the average distace from an observation to its k nearest neighbours rather than the distance to its kth nearest neighbour. This means that the outlier scores depends on the distance to all k neighbours rather than just a single neighbour.
+
+```{r weighted_KNN_outlier}
+top_n <- 10
+
+WKNN_outlier <- apply(kNNdist(x = dat, k = k, all = TRUE), 1, mean)
+rank_WKNN_outliers <- order(x = WKNN_outlier, decreasing = TRUE)
+WKNN_result <- data.frame(ID = rank_WKNN_outliers, score = WKNN_outlier[rank_WKNN_outliers])
+head(WKNN_result, top_n)
+
+# plot the top 20 outliers
+top_n <- 20
+( g3 <- g0a +
+    geom_point(data = dat[rank_WKNN_outliers[1:top_n],], aes(x = x1, y = x2),
+               shape = 19, colour = "darkcyan", size = 2) +
+    geom_text(data = dat[rank_WKNN_outliers[1:top_n],],
+              aes(x = (x1-0.5), y = x2, label = rank_WKNN_outliers[1:top_n]),
+              size = 2.5) +
+    ggtitle("Figure 4: Top 20 KNN outliers (k = 4) - coloured cyan and labelled") )
+
+# plot each observation with a circle whose radius is proportional to its outlier score
+( g4 <- g0b +
+    geom_point(dat, mapping = aes(x = x1, y = x2, size = WKNN_outlier),
+               shape = 1, color = "darkcyan") +
+    scale_size_continuous(range = c(0.1, 20)) +
+    guides(size = "none") +
+    ggtitle("Figure 5: Weighted KNN outliers (k = 4) with circle radii proportional to the outlier scores")
+)
+```
+
+The task here was to use the page blocks classification dataset and apply the KNN outlier algorithm. Page blocks refer to the different sections of a document page and identifying the different sections is actually a very important step in document analysis. For this task, all blocks other than the first ("text") are considered outlier observations; that is, "horizontal line", "graphic", "vertical line" and "picture".
+
+```{r page_blocks}
+page_blocks <- read.table("page-blocks.csv", header = TRUE, sep = ",", dec = ".")
+str(page_blocks)
+head(page_blocks)
+summary(page_blocks)
+
+pb_predictors <- page_blocks[, 1:10]
+pb_class <- page_blocks[, 11]
+pb_class <- ifelse(pb_class == 1, 0, 1)
+
+KNN_precision <- rep(0, 50)
+for (k in 1:50) {
+  KNN_outlier <- kNNdist(x = pb_predictors, k = k, all = TRUE)[, k]
+  
+  rank_KNN_outliers <- order(x = KNN_outlier, decreasing = TRUE)
+  KNN_result <- data.frame(ID = rank_KNN_outliers, score = KNN_outlier[rank_KNN_outliers])
+
+  # number of true outliers detected as outliers
+  KNN_precision[k] <- mean(pb_class[rank_KNN_outliers[1:560]] == 1)
+}
+
+data.frame(k_value = 1:50, KNN_precision = KNN_precision) %>% 
+  ggplot(aes(x = k_value, y = KNN_precision)) +
+  geom_point() +
+  labs(x = NULL,
+       y = "precision at n",
+       title = "Figure 6a: Precision at n for the raw data at different values of k") +
+  theme_classic()
+```
+
+KNN distances can be dominated by variables with wider ranges of values, so the results using the raw data were compared with the results with normalised data. As will be very clear from the plot, the normalised data gives far better precision values.
+
+```{r page_blocks_normalised}
+pb_predictors_norm <- scale(pb_predictors)
+summary(pb_predictors_norm)
+
+KNN_precision <- rep(0, 50)
+for (k in 1:50) {
+  KNN_outlier <- kNNdist(x = pb_predictors_norm, k = k, all = TRUE)[, k]
+  
+  rank_KNN_outliers <- order(x = KNN_outlier, decreasing = TRUE)
+  KNN_result <- data.frame(ID = rank_KNN_outliers, score = KNN_outlier[rank_KNN_outliers])
+
+  # number of true outliers detected as outliers
+  KNN_precision[k] <- mean(pb_class[rank_KNN_outliers[1:560]] == 1)
+}
+
+```
+
+```{r}
+data.frame(k_value = 1:50, KNN_precision = KNN_precision) %>% 
+  ggplot(aes(x = k_value, y = KNN_precision)) +
+  geom_point() +
+  labs(x = NULL,
+       y = "precision at n",
+       title = "Figure 6b: Precision at n for the normalised data at different values of k") +
+  theme_classic()
+```
+
+### Local Outlier Factor
+
+This is a more sophisticated algorithm meant to overcome the main limitations of the KNN outlier algorithm - namely the inability to detect local outliers in the presence of clusters with varied densities. It is a *local* method, because it takes only a neighbourhood around each observation as a reference for measuring how likely the observation is to be an outlier. The idea here is that for an observation in a cluster, the density relative to the density of its neighbours will be very similar to the density of each neighbour relative to its own neighbours. In contrast, particularly for a local outlier whose neighbours belong to a cluster, the density of the observation relative to its neighbours is going to be very different to the density of each neighbour relative to its own own neighbours.
+
+In addition, unlike the KNN outlier scores, the LOF scores are interpretable in both absolute and relative terms. LOF scores of observations inside a cluster are expected to be around one, with LOF scores smaller than one indicating the observation is situated in a denser area of a cluster, and LOF scores slightly larger than one indicating observations that are close to clusters. Global outliers tend to have values significantly larger than one - typically more than two or three.
+
+```{r}
+minPts = 4
+LOF_outlier <- lof(x = dat, minPts = minPts)
+
+top_n <- 10
+rank_LOF_outliers <- order(x = LOF_outlier, decreasing = TRUE)
+LOF_result <- data.frame(ID = rank_LOF_outliers, score = LOF_outlier[rank_LOF_outliers])
+head(LOF_result, top_n)
+
+# plot the top 20 outliers
+top_n <- 20
+( g5 <- g0a +
+    geom_point(data = dat[rank_LOF_outliers[1:top_n],], aes(x = x1, y = x2),
+               shape = 19, colour = "seagreen", size = 2) +
+    geom_text(data = dat[rank_LOF_outliers[1:top_n],],
+              aes(x = (x1-0.5), y = x2, label = rank_LOF_outliers[1:top_n]),
+              size = 2.5) +
+    ggtitle("Figure 7: Top 20 LOF outliers (minPts = 4) - coloured green and labelled") )
+
+# plot each observation with a circle whose radius is proportional to its outlier score
+( g6 <- g0b +
+    geom_point(dat, mapping = aes(x = x1, y = x2, size = LOF_outlier),
+               shape = 1, color = "seagreen") +
+    scale_size_continuous(range = c(0.1, 20)) +
+    guides(size = "none") +
+    ggtitle("Figure 7: LOF outliers (minPts = 4) with circle radii proportional to the outlier scores")
+  )
+```
+
+```{r page_blocks2}
+LOF_precision <- rep(0, 50)
+for (minPts in 2:50) {
+  LOF_outlier <- lof(x = pb_predictors, minPts = minPts)
+  
+  rank_LOF_outliers <- order(x = LOF_outlier, decreasing = TRUE)
+  LOF_result <- data.frame(ID = rank_LOF_outliers, score = LOF_outlier[rank_LOF_outliers])
+
+  # number of true outliers detected as outliers
+  LOF_precision[minPts] <- mean(pb_class[rank_LOF_outliers[1:560]] == 1)
+}
+
+data.frame(minPts_value = 1:50, LOF_precision = LOF_precision) %>% 
+  ggplot(aes(x = minPts_value, y = LOF_precision)) +
+  geom_point() +
+  labs(x = NULL,
+       y = "precision at n",
+       title = "Figure 8a: Precision at n for the raw data at different values of minPts") +
+  theme_classic()
+```
+
+In this case, normalisation actually has an adverse impact on the results and it would be better to use the raw data for this algorithm. (However, this may not always beeen the case).
+
+```{r page_blocks_normalised2}
+LOF_precision <- rep(0, 50)
+for (minPts in 2:50) {
+  LOF_outlier <- lof(x = pb_predictors_norm, minPts = minPts)
+  
+  rank_LOF_outliers <- order(x = LOF_outlier, decreasing = TRUE)
+  LOF_result <- data.frame(ID = rank_LOF_outliers, score = LOF_outlier[rank_LOF_outliers])
+
+  # number of true outliers detected as outliers
+  LOF_precision[minPts] <- mean(pb_class[rank_LOF_outliers[1:560]] == 1)
+}
+
+data.frame(minPts_value = 1:50, LOF_precision = LOF_precision) %>% 
+  ggplot(aes(x = minPts_value, y = LOF_precision)) +
+  geom_point() +
+  labs(x = NULL,
+       y = "precision at n",
+       title = "Figure 8b: Precision at n for the normalised data at different values of minPts") +
+  theme_classic()
+```
+
+### Global-Local Outlier Scores from Hierarchies (GLOSH)
+
+GLOSH is an outlier score that can be computed as a by-product of the HDBSCAN density-based clustering algorithm. The method is based on a ratio involving the density around each observation and the densest point in its 'closest' cluster (from a density-based connectivity perspective). Scores lie within a range of zero to one, where values close to zero indicating observations belonging to a cluster and values close to zero indicating outliers. Global outliers are ranked above local outliers, which in turn are ranked above observations in a cluster.
+
+```{r glosh}
+k <- 4
+GLOSH_outlier <- glosh(x = as.matrix(dat), k = k)
+
+top_n <- 10
+rank_GLOSH_outliers <- order(x = GLOSH_outlier, decreasing = TRUE)
+GLOSH_result <- data.frame(ID = rank_GLOSH_outliers, score = GLOSH_outlier[rank_GLOSH_outliers])
+head(GLOSH_result, top_n)
+
+# plot the top 20 outliers
+top_n <- 20
+( g7 <- g0a +
+    geom_point(data = dat[rank_GLOSH_outliers[1:top_n],], aes(x = x1, y = x2),
+               shape = 19, colour = "seagreen", size = 2) +
+    geom_text(data = dat[rank_GLOSH_outliers[1:top_n],],
+              aes(x = (x1-0.5), y = x2, label = rank_GLOSH_outliers[1:top_n]),
+              size = 2.5) +
+    ggtitle("Figure 9: Top 20 GLOSH outliers (k = 4) - coloured green and labelled") )
+
+# plot each observation with a circle whose radius is proportional to its outlier score
+( g8 <- g0b +
+    geom_point(dat, mapping = aes(x = x1, y = x2, size = GLOSH_outlier),
+               shape = 1, color = "seagreen") +
+    scale_size_continuous(range = c(0.1, 15)) +
+    guides(size = "none") +
+    ggtitle("Figure 10: GLOSH outliers (k = 4) with circle radii proportional to the outlier scores")
+  )
+
+# improve contrast between cluster observations and outliers by making the radii of the circles proportional to the GLOSH scores squared or cubed 
+GLOSH_outlier_trans <- ( (GLOSH_outlier - min(GLOSH_outlier)) / (max(GLOSH_outlier) - min(GLOSH_outlier)) )^3
+( g9 <- g0b +
+    geom_point(dat, mapping = aes(x = x1, y = x2, size = GLOSH_outlier_trans),
+               shape = 1, color = "seagreen") +
+    scale_size_continuous(range = c(0.1, 15)) +
+    guides(size = "none") +
+    ggtitle("Figure 11: GLOSH outliers (k = 4) with circle radii rescaled and transformed")
+  )
+
+# increase the value of k used (k acts as a smoothing factor)
+k <- 15
+GLOSH_outlier <- glosh(x = as.matrix(dat), k = k)
+GLOSH_outlier_trans <- ( (GLOSH_outlier - min(GLOSH_outlier)) / (max(GLOSH_outlier) - min(GLOSH_outlier)) )^3
+
+( g10 <- g0b +
+    geom_point(dat, mapping = aes(x = x1, y = x2, size = GLOSH_outlier_trans),
+               shape = 1, color = "seagreen") +
+    scale_size_continuous(range = c(0.1, 15)) +
+    guides(size = "none") +
+    ggtitle("Figure 12: GLOSH outliers (k = 15) with circle radii rescaled and transformed")
+  )
+
+# plot top 50 outliers by their outlier ranks
+top_n <- 50
+rank_GLOSH_outliers <- order(x = GLOSH_outlier, decreasing = TRUE)
+
+( g11 <- g0a +
+    geom_point(data = dat[rank_GLOSH_outliers[1:top_n],], aes(x = x1, y = x2),
+               shape = 19, colour = "seagreen", size = 2) +
+    geom_text(data = dat[rank_GLOSH_outliers[1:top_n],],
+              aes(x = (x1-0.5), y = x2, label = c(1:top_n)),
+              size = 2.5) +
+    ggtitle("Figure 13: Top 20 GLOSH outliers (k = 15) - coloured green and labelled with their rank") )
+```
+
+```{r page_blocks3}
+GLOSH_precision <- rep(0, 50)
+for (k in 2:50) {
+  GLOSH_outlier <- glosh(x = as.matrix(pb_predictors), k = k)
+  
+  rank_GLOSH_outliers <- order(x = GLOSH_outlier, decreasing = TRUE)
+  GLOSH_result <- data.frame(ID = rank_GLOSH_outliers, score = GLOSH_outlier[rank_GLOSH_outliers])
+
+  # number of true outliers detected as outliers
+  GLOSH_precision[k] <- mean(pb_class[rank_GLOSH_outliers[1:560]] == 1)
+}
+
+data.frame(k_value = 1:50, GLOSH_precision = GLOSH_precision) %>% 
+  ggplot(aes(x = k_value, y = GLOSH_precision)) +
+  geom_point() +
+  labs(x = NULL,
+       y = "precision at n",
+       title = "Figure 14a: Precision at n for the raw data at different values of k") +
+  theme_classic()
+```
+
+As with the KNN outlier algorithm, normalising the data helps improve the results.
+
+```{r page_blocks_normalised3}
+GLOSH_precision <- rep(0, 50)
+for (k in 2:50) {
+  GLOSH_outlier <- glosh(x = as.matrix(pb_predictors_norm), k = k)
+  
+  rank_GLOSH_outliers <- order(x = GLOSH_outlier, decreasing = TRUE)
+  GLOSH_result <- data.frame(ID = rank_GLOSH_outliers, score = GLOSH_outlier[rank_GLOSH_outliers])
+
+  # number of true outliers detected as outliers
+  GLOSH_precision[k] <- mean(pb_class[rank_GLOSH_outliers[1:560]] == 1)
+}
+
+data.frame(k_value = 1:50, GLOSH_precision = GLOSH_precision) %>% 
+  ggplot(aes(x = k_value, y = GLOSH_precision)) +
+  geom_point() +
+  labs(x = NULL,
+       y = "precision at n",
+       title = "Figure 14b: Precision at n for the normalised data at different values of k") +
+  theme_classic()
+```
+
+### Principal Component Analysis
+
+Principal component analysis is a classic dimensionality reduction technique that can also be used for data visualisation in the context of data mining.
