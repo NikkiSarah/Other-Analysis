@@ -1,0 +1,273 @@
+---
+title: "Data Mining - Forge Detection"
+date: "2022-11-13"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+## {.tabset}
+
+### Setup
+
+In this notebook we are working with the original version of the Stamps dataset (not normalised and without duplicates), which contains 340 observations described by nine numerical predictors. This is actually a binary classification dataset, with the tenth column of the dataset containing the class labels ('yes' denoting a forged stamp and 'no' denoting a genuine stamp). In the unsupervised sections, the class labels are used only for visualisation and external assessment of the results as they would normally not be available for model training. (And if they were, a supervised approach would then typically be used in order to incorporate this extra information).
+
+```{r}
+# knitr::opts_chunk$set(echo = TRUE)
+
+suppressMessages(library(tidyverse))
+suppressMessages(library(scales))
+suppressMessages(library(dbscan))
+library(class)
+library(ROCR)
+suppressMessages(library(factoextra))
+suppressMessages(library(kableExtra))
+```
+
+```{r}
+stamps <- read.table("stamps_withoutdupl_09.csv", header = FALSE, sep = ",", dec = ".")
+str(stamps)
+summary(stamps)
+
+stamp_predictors <- stamps[, 1:9]
+stamp_forged <- stamps[, 10]
+stamp_forged <- ifelse(stamp_forged == "no", 0, 1)
+```
+
+```{r}
+# define the colour palette to use
+cmap <- viridis_pal(end = 0.9, direction = -1)(6) # viridis
+cmap <- viridis_pal(direction = -1, option = "G")(6) # mako
+# show_col(cmap)
+```
+
+```{r}
+# combine the dataset into a long format
+stamps_long <- pivot_longer(stamps, cols = V1:V9, names_to = "predictor")
+
+( stamps_long %>% 
+  ggplot(aes(value)) +
+  geom_histogram(bins = 50, fill = cmap[4], colour = "black") +
+  facet_wrap(~predictor, ncol = 2, scales = "free") +
+  labs(x = NULL, y = NULL, title = "Figure 1a: Predictor variable distributions") +
+  theme_classic() )
+
+( stamps_long %>% 
+  ggplot(aes(x = value, fill = V10)) +
+  geom_histogram(bins = 50, alpha = 0.75, colour = "black") +
+  facet_wrap(~predictor, ncol = 2, scales = "free") +
+  labs(x = NULL, y = NULL, title = "Figure 1b: Predictor variable distributions by forgery status") +
+  scale_fill_manual(values = cmap[2:4]) +
+  theme_classic() )
+```
+
+```{r}
+corr_mat <- round(cor(stamp_predictors), 2)
+corr_mat[lower.tri(corr_mat)] <- NA
+melted_corr_mat <- reshape2::melt(corr_mat)
+
+melted_corr_mat %>% 
+  ggplot(aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile() +
+  geom_text(aes(Var2, Var1, label = value), colour = "white", size = 4) +
+  ggtitle("Figure 2: Predictor variable (pearson) correlation heatmap") +
+  theme_classic() +
+  theme(legend.position = "none")
+```
+
+Although the interpretation of the correlation coefficient sizes can vary depending on the situation, a general rule-of-thumb is that anything larger than 0.5 is strong, moderate is any value between 0.3 and 0.5, and weak is anything between 0 and 0.3. Based on this, there are four pairs with strong pearson correlations in either the positive or negative direction and about a dozen with moderate correlation.
+
+### Part 1: Principal Components Analysis
+
+Whilst the ranges of the predictor variables are very similar, the data will be scaled anyway in case the slight variations do adversely impact the results. Note, however, that the variables weren't centred.
+
+```{r pca}
+stamps_pca <- prcomp(stamp_predictors, scale = TRUE)
+summary_stamps_pca <- summary(stamps_pca)$importance
+
+kable(round(summary_stamps_pca, 3), caption = "Table 1: Summary statistics for each principal component") %>% 
+  kable_styling(latex_options = "striped") %>% 
+  kable_classic()
+
+plot_dat <- t(summary_stamps_pca) %>% 
+  as_tibble(.name_repair = make.names)
+plot_dat <- cbind(plot_dat, t(summary_stamps_pca[0,]))
+plot_dat <- rownames_to_column(plot_dat, var = "comp_num")
+
+( ggplot(plot_dat) +
+    geom_point(aes(x = comp_num, y = Cumulative.Proportion), colour = cmap[2]) +
+    geom_col(aes(x = comp_num, y = Proportion.of.Variance), fill = cmap[4]) +
+    labs(x = NULL, y = "Value",
+         title = "Figure 3: Proportion and cumulative proportion of variance explained for each principal component") +
+    theme_classic() )
+```
+
+Table 1 shows the summary statistics for the results of the decomposition and Figure 3 displays the cumulative proportion of variance explained for the nine principal components (PCs). It indicates that 40% of the total variance is captured by the first component, but the proportion of variance explained by each subsequent component drops off significantly. This means that the first three components capture just less than 70% of the total variance (68.9%) in the data and six components are required to explain at least 90% of the total variance.
+
+```{r 3dscatter}
+plot_dat <- stamps_pca$x[, 1:3]
+plot_dat <- cbind(plot_dat, stamp_forged) %>% as_tibble()
+plot_dat$ID <- as.numeric(rownames(plot_dat))
+plot_dat$shapes <- ifelse(plot_dat$stamp_forged == 0, 21, 13)
+
+plot3D::scatter3D(x = plot_dat$PC1, y = plot_dat$PC2, z = plot_dat$PC3,
+                  colvar = plot_dat$stamp_forged, col = cmap[c(2,4)], lwd = 1.9,
+                  main = "Figure 4a: 3D scatter plot of the first three principal components, coloured by forgery status",
+                  xlab = "PC1", ylab = "PC2", zlab = "PC3", pch = plot_dat$shapes)
+
+plot3D::scatter3D(x = plot_dat$PC1, y = plot_dat$PC2, z = plot_dat$PC3,
+                  colvar = plot_dat$stamp_forged, col = cmap[c(2,4)], lwd = 1.9,
+                  main = "Figure 4b: 3D scatter plot of the first three principal components, coloured by forgery status",
+                  xlab = "PC1", ylab = "PC2", zlab = "PC3", pch = plot_dat$shapes,
+                  phi = 10)
+
+plot3D::scatter3D(x = plot_dat$PC1, y = plot_dat$PC2, z = plot_dat$PC3,
+                  colvar = plot_dat$stamp_forged, col = cmap[c(2,4)], lwd = 1.9,
+                  main = "Figure 4c: 3D scatter plot of the first three principal components, coloured by forgery status",
+                  xlab = "PC1", ylab = "PC2", zlab = "PC3", pch = plot_dat$shapes,
+                  theta = 10)
+```
+
+If the 3D visualisation of the data is in truth a reasonable representation of the data in the fully-dimensional space, then the majority of the forged stamps should be reasonably easy to detect using unsupervised methods. This because most of the forged stamps are off to one side of the main cluster in all three plots. There are some genuine stamps that are separated from the main cluster and equally, one or two forged stamps that are in the main cluster, which means that it is like some stamps from both groups will be misclassified.
+
+### Part 2: kNN Unsupervised Outlier Detection
+
+In this section, an unsupervised kNN outlier detection algorithm is used to detect the forged stamps. Recall that this algorithm gives each observation a score based on the distance to its kth nearest neighbour. Observations with higher scores are more likely to be outliers (forged stamps) than observations with lower scores as they are more likely to be separated from the nearest cluster.
+
+```{r knn5}
+k <- 5
+outlier_scores <- kNNdist(x = plot_dat[, 1:3], k = k, all = TRUE)[, k]
+
+plot3D::scatter3D(x = plot_dat$PC1, y = plot_dat$PC2, z = plot_dat$PC3,
+                    colvar = outlier_scores,
+                    main = "Figure 5a: kNN outliers (k = 4), coloured by score",
+                    xlab = "PC1", ylab = "PC2", zlab = "PC3", pch = 20)
+
+top_n <- 31
+rank_kNN_outliers <- order(x = outlier_scores, decreasing = TRUE)
+kNN_results <- data.frame(ID = rank_kNN_outliers, score = outlier_scores[rank_kNN_outliers])
+plot_dat2 <- left_join(plot_dat, kNN_results, by = "ID") %>% 
+  arrange(desc(score))
+plot_dat2 <- plot_dat2 %>% 
+  mutate(knn_outlier = ifelse(as.numeric(rownames(plot_dat2)) <= 31, 1, 0))
+text_dat <- plot_dat2 %>% filter(as.numeric(rownames(plot_dat2)) <= 31)
+
+plot3D::scatter3D(x = plot_dat2$PC1, y = plot_dat2$PC2, z = plot_dat2$PC3,
+                  colvar = plot_dat2$knn_outlier, col = c("black", "darkred"),
+                  main = "Figure 5b: Top 31 kNN outliers (k = 4)",
+                  xlab = "PC1", ylab = "PC2", zlab = "PC3", pch = 20)
+plot3D::text3D(x = text_dat$PC1, y = text_dat$PC2, z = text_dat$PC3,
+               labels = text_dat$ID, add = TRUE)
+```
+
+```{r knn25}
+k <- 25
+outlier_scores <- kNNdist(x = plot_dat[, 1:3], k = k, all = TRUE)[, k]
+
+plot3D::scatter3D(x = plot_dat$PC1, y = plot_dat$PC2, z = plot_dat$PC3,
+                    colvar = outlier_scores,
+                    main = "Figure 6a: kNN outliers (k = 25), coloured by score",
+                    xlab = "PC1", ylab = "PC2", zlab = "PC3", pch = 20)
+
+top_n <- 31
+rank_kNN_outliers <- order(x = outlier_scores, decreasing = TRUE)
+kNN_results <- data.frame(ID = rank_kNN_outliers, score = outlier_scores[rank_kNN_outliers])
+plot_dat2 <- left_join(plot_dat, kNN_results, by = "ID") %>% 
+  arrange(desc(score))
+plot_dat2 <- plot_dat2 %>% 
+  mutate(knn_outlier = ifelse(as.numeric(rownames(plot_dat2)) <= 31, 1, 0))
+text_dat <- plot_dat2 %>% filter(as.numeric(rownames(plot_dat2)) <= 31)
+
+plot3D::scatter3D(x = plot_dat2$PC1, y = plot_dat2$PC2, z = plot_dat2$PC3,
+                  colvar = plot_dat2$knn_outlier, col = c("black", "darkred"),
+                  main = "Figure 6b: Top 31 kNN outliers (k = 25)",
+                  xlab = "PC1", ylab = "PC2", zlab = "PC3", pch = 20)
+plot3D::text3D(x = text_dat$PC1, y = text_dat$PC2, z = text_dat$PC3,
+               labels = text_dat$ID, add = TRUE)
+```
+
+```{r knn100}
+k <- 100
+outlier_scores <- kNNdist(x = plot_dat[, 1:3], k = k, all = TRUE)[, k]
+
+plot3D::scatter3D(x = plot_dat$PC1, y = plot_dat$PC2, z = plot_dat$PC3,
+                  colvar = outlier_scores,
+                  main = "Figure 7a: kNN outliers (k = 100), coloured by score",
+                  xlab = "PC1", ylab = "PC2", zlab = "PC3", pch = 20)
+
+top_n <- 31
+rank_kNN_outliers <- order(x = outlier_scores, decreasing = TRUE)
+kNN_results <- data.frame(ID = rank_kNN_outliers, score = outlier_scores[rank_kNN_outliers])
+plot_dat2 <- left_join(plot_dat, kNN_results, by = "ID") %>% 
+  arrange(desc(score))
+plot_dat2 <- plot_dat2 %>% 
+  mutate(knn_outlier = ifelse(as.numeric(rownames(plot_dat2)) <= 31, 1, 0))
+text_dat <- plot_dat2 %>% filter(as.numeric(rownames(plot_dat2)) <= 31)
+
+plot3D::scatter3D(x = plot_dat2$PC1, y = plot_dat2$PC2, z = plot_dat2$PC3,
+                  colvar = plot_dat2$knn_outlier, col = c("black", "darkred"),
+                  main = "Figure 7b: Top 31 kNN outliers (k = 100)",
+                  xlab = "PC1", ylab = "PC2", zlab = "PC3", pch = 20)
+plot3D::text3D(x = text_dat$PC1, y = text_dat$PC2, z = text_dat$PC3,
+               labels = text_dat$ID, add = TRUE)
+```
+
+Ignoring the class labels, these plots gave no real indication of whether larger or smaller values (or something somewhere in between) were better at detecting observations away from the main cluster.
+
+### Part 3: kNN Supervised Anomaly Detection
+
+```{r sknn5}
+# standardise the data before training the model
+stamp_predictors_scaled <- scale(stamp_predictors)
+
+sauc_list <- list()
+for (k in c(5, 25, 50, 75, 100)) {
+  kNN_results <- knn.cv(train = stamp_predictors_scaled, cl = stamp_forged, k = k, prob = TRUE)
+  pred_probs <- attr(kNN_results, "prob")
+  # ensure that the probabilities relate to the positive class
+  pred_probs <- ifelse(kNN_results == 1, pred_probs, 1 - pred_probs)
+
+  preds <- prediction(pred_probs, stamp_forged)
+  roc_perf <- performance(preds, "tpr", "fpr")
+  auc_perf <- performance(preds, measure = "auc")
+  auc_val <- auc_perf@y.values[[1]]
+  sauc_list[[length(sauc_list) + 1]] <- auc_val
+}
+
+# observe what happens if the data isn't standardised
+sauc_list2 <- list()
+for (k in c(5, 25, 50, 75, 100)) {
+  kNN_results <- knn.cv(train = stamp_predictors, cl = stamp_forged, k = k, prob = TRUE)
+  pred_probs <- attr(kNN_results, "prob")
+  pred_probs <- ifelse(kNN_results == 1, pred_probs, 1 - pred_probs)
+
+  preds <- prediction(pred_probs, stamp_forged)
+  roc_perf <- performance(preds, "tpr", "fpr")
+  auc_perf <- performance(preds, measure = "auc")
+  auc_val <- auc_perf@y.values[[1]]
+  sauc_list2[[length(sauc_list2) + 1]] <- auc_val
+}
+```
+
+```{r usknn5}
+usauc_list <- list()
+for (k in c(5, 25, 50, 75, 100)) {
+  outlier_scores <- kNNdist(x = plot_dat[, 1:3], k = k, all = TRUE)[, k]
+  outlier_probs <- (outlier_scores - min(outlier_scores)) / (max(outlier_scores) - min(outlier_scores))
+  outlier_class <- ifelse(outlier_probs > 0.5, 1, 0)
+  
+  preds <- prediction(outlier_probs, stamp_forged)
+  roc_perf <- performance(preds, "tpr", "fpr")
+  auc_perf <- performance(preds, measure = "auc")
+  auc_val <- auc_perf@y.values[[1]]
+  usauc_list[[length(usauc_list) + 1]] <- auc_val
+}
+  
+auc_df <- c(5, 25, 50, 75, 100) %>% as_tibble()
+auc_df$knn <- unlist(sauc_list, use.names = FALSE)
+auc_df$knn_unstd <- unlist(sauc_list2, use.names = FALSE)
+auc_df$outlier_knn <- unlist(usauc_list, use.names = FALSE)
+print(auc_df)
+```
+
+The performance of the supervised and unsupervised algorithms are very similar, which indicates that for this dataset at least, the unsupervised algorithm produces reasonable results in the absence of class labels to train on. In addition, for the supervised algorithm, the performance appeared to be optimal at around 25 neighbours, whereas the number of neighbours for the unsupervised algorithm was slightly higher at 50 to 75 neighbours. Finally, standardising the data appeared to have a negligible impact at lower numbers of neighbours, but produced a worse-performing model at higher numbers of neighbours.  
