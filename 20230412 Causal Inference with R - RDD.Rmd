@@ -1,0 +1,134 @@
+---
+title: "Regression Discontinuity Design"
+output: html-notebook
+editor_options: 
+  chunk_output_type: console
+---
+
+A new policy requires that power plants that have an output of 600 megawatts or more have to install an emissions control device that removes harmful chemicals before releasing exhaust into the air. An environmental group decides to measure ambient air quality one mile away from each power plant to assess whether the emissions control device leads to better air quality.
+
+The air_data dataset has the following variables:
+
+- id: power plant ID.
+- watts: power plant output (megawatts)
+- group: treatment group formed by cutpoint at 600 watts (control = “No Device”, treatment = “Emissions Device”)
+- aqi: air quality index from 0 (good air quality) to 500 (poor air quality)
+
+## Visual Check
+
+```{r, message=FALSE}
+# import libraries
+library(ggplot2)
+library(rdd)
+
+# import dataset/s
+air_data <- read.csv("air_data.csv")
+```
+
+```{r}
+# create scatter plot with watts as forcing variable and AQI as outcome
+air_scatter <- 
+  ggplot(air_data, 
+  aes(x = watts, y = aqi, color = group, shape = group)) +
+  geom_point() +
+  geom_vline(xintercept = 600, linetype = 'dashed')
+print(air_scatter)
+```
+
+```{r}
+# add best-fit lines to air_scatter
+air_scatter2 <- air_scatter + geom_smooth(aes(group = group), method = "lm") 
+print(air_scatter2)
+```
+
+Notice how the regression lines show a discontinuity in the outcome variable at the cutoff.
+
+## Choosing a Bandwidth
+
+```{r, message=FALSE}
+# scatter plot with cutpoint
+air_scatter <- ggplot(
+  data = air_data,
+  aes(
+    x = watts,
+    y = aqi,
+    color = group,
+    shape = group
+  )
+) +
+  geom_point() +
+  geom_vline(xintercept = 600, linetype = "dashed")
+print(air_scatter)
+```
+
+```{r}
+# calculate the IK bandwidth
+air_ik_bw <- IKbandwidth(X = air_data$watts, Y = air_data$aqi, cutpoint = 600)
+print(air_ik_bw)
+```
+
+```{r}
+# add vertical bandwidth lines to air_scatter
+air_scatter2 <- air_scatter + 
+  geom_vline(xintercept = 600 + c(-air_ik_bw, air_ik_bw))
+print(air_scatter2)
+```
+
+Do you think the two device groups within this bandwidth will be similar enough to compare? What might be the tradeoff if the bandwidth is too narrow?
+
+## Estimating the Causal Treatment Effect
+
+```{r}
+# fit local linear regression model
+air_rdd <- RDestimate(formula = aqi ~ watts, data = air_data, cutpoint = 600,
+                      bw = air_ik_bw)
+print(air_rdd)
+```
+
+Take note of the estimates of the LATE at the different bandwidths. Are the estimates different or fairly similar? What do you think this says about the reliability of our estimate?
+
+The model output shows us that the LATE is -36.45, meaning that in this dataset, we can conclude that an emissions device led to a decrease in the air quality index (an increase in air quality) by 36.45 points on average. However, the estimate changed based on the bandwidth, ranging from a decrease of 32.82 points at half of the bandwidth to a decrease of 38.14 points at twice the bandwidth.
+
+## Advantages and Disadvantages of RDD
+
+```{r, message=FALSE}
+# fit model with bandwidth of 50
+air_rdd_50 <- RDestimate(
+  formula = aqi ~ watts,
+  data = air_data,
+  cutpoint = 600,
+  bw = 50
+)
+print(air_rdd_50)
+```
+
+The model output shows us that there isn't a big difference in the esimated LATE between the 25, 50 and 100 bandwidths.
+
+```{r}
+# Check the number of observations
+print(air_rdd_50$obs)
+```
+
+However, there is a big difference in sample size when looking at power plants with outputs of 575-625 megawatts (`Half-BW`) and those with outputs of 500-600 megawatts (`Double-BW`). Specifically, the sample sizes are 69 and 199 respecively.
+
+```{r}
+# Check the standard errors
+print(air_rdd_50$se)
+```
+
+The relationship between sample size and standard errors of the LATE isn't linear. The standard error is smallest for `Double-BW` and in the middle for `Half-BW`.
+
+## Conclusion
+
+```{r}
+# fit model with IK bandwidth
+air_rdd_ik <- RDestimate(
+  formula = aqi ~ watts,
+  data = air_data,
+  cutpoint = 600,
+  bw = air_ik_bw
+)
+print(air_rdd_ik)
+```
+
+Based on the results of the local linear regression modelling, we can conclude that in our sample, emissions control devices led to a decrease in AQI of 36.45 points. This means that the emissions control device achieved its goal of providing cleaner air in close proximity to the power plants in our dataset.

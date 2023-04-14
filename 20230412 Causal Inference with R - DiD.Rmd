@@ -1,0 +1,124 @@
+---
+title: "Instrumental Variables"
+output: html-notebook
+editor_options: 
+  chunk_output_type: console
+---
+
+Let’s say there was a new entertainment tax in Sydney starting in 2019. You want to find out if the tax affected movie theater ticket sales. You have data about average annual movie theater ticket sales in Sydney from 2012 through 2019 with the following variables:
+
+- city: city where the universities are located
+- year: year the data is from
+- sales: average ticket sales for theaters in the city
+
+This data is contained in the dataset `tickets`.
+
+```{r, message=FALSE}
+# import libraries
+library(dplyr)
+library(ggplot2)
+
+# import dataset
+tickets <- read.csv("ticket_sales.csv")
+head(tickets)
+```
+
+```{r}
+# create plot of ticket sales
+syd_sales <- tickets %>% 
+  filter(city == "Sydney") %>% 
+  ggplot(aes(x=year, y=sales)) + 
+  geom_line()
+
+# add line at x=2018 and x-axis label
+syd_sales + 
+  geom_vline(xintercept = 2018, linetype="dashed") + 
+  scale_x_continuous(breaks = c(2012:2019))
+```
+
+The line plot above indicates that in the year the tax was implemented, ticket sales dropped.
+
+## Finding a Control Group
+
+```{r}
+# plot wages for Sydney and Toronto
+ggplot(
+  data = tickets,
+  aes(x = year, y = sales, color = city, linetype = city)) +
+  geom_line() +
+  geom_vline(xintercept = 2018, linetype = "dashed") +
+  scale_x_continuous(breaks = c(2012:2018))
+```
+
+The plot indicates that the ticket sales in Toronto over the same period show a roughly similar trend to that of Sydney. In addition, both exhibit a particularly large dip in sales in 2016.
+
+## The 2x2 Case
+
+```{r}
+# subset to 2018 and 2019
+tickets2 <- tickets %>% 
+  filter(year > 2017)
+```
+
+```{r}
+# view plot
+ggplot(data = tickets2, aes(x = year, y = sales, color = city, linetype = city)) +
+  geom_line(linewidth = 1.5) +
+  scale_x_continuous(breaks = c(2018, 2019))
+```
+
+Just from the last two years of data, it appears as though ticket sales were already declining and perhaps the new tax just exacerbated a trend already present.
+
+## Estimate Using Difference in Means
+
+```{r}
+print(tickets2)
+```
+
+```{r}
+# save values of Tdiff and Sdiff
+Sdiff = (tickets %>% filter(city == "Sydney" & year == 2019))$sales - 
+  (tickets %>% filter(city == "Sydney" & year == 2018))$sales
+Tdiff = (tickets %>% filter(city == "Toronto" & year == 2019))$sales - 
+  (tickets %>% filter(city == "Toronto" & year == 2018))$sales
+
+print(Sdiff)
+print(Tdiff)
+
+# subtract Tdiff from Sdiff
+did_means = Sdiff - Tdiff
+
+print(did_means)
+```
+
+Hypothetically, if the law had no effect on average ticket sales, we would expect the difference between the post-treatment mean and the pre-treatment mean for the treatment group to be similar to the difference for the control group. However, Sydney had a decline in average ticket sales and Toronto had an increase.
+
+According to our basic 2x2 DID that uses mean differences alone, we estimate the ATE on the treated to be -$2.25.
+
+## Estimate Using Linear Regression
+
+```{r}
+# add treatment indicator
+tickets2$treat <- ifelse(tickets2$city == "Sydney", 1, 0)
+# add time indicator
+tickets2$time <- ifelse(tickets2$year == 2019, 1, 0)
+
+# save linear model
+did_reg <- lm(sales ~ treat*time, data = tickets2)
+print(did_reg)
+```
+
+- `Intercept` indicates the expected value for pre-treatment average ticket sales for the control group (Toronto 2018).
+- `treat` is the difference between the control group and the treatment group at the pre-treatment time (Sydney 2018 - Toronto 2018).
+`'time` is the difference between the pre-treatment and post-treatment times for the control group (Toronto 2019 - Toronto 2018).
+
+Combinations of these coefficients give us back all four means from our dataset.
+
+| Mean            | Equivalent Coefficient(s)             |
+| --------------- | ------------------------------------- |
+| Washington 2016 | Intercept                             |
+| California 2016 |	Intercept + treat                     |
+| Washington 2017 |	Intercept + time                      |
+| California 2017 |	Intercept + treat + time + treat:time |
+
+Notice how the coefficient on the interaction term is exactly what we computed for the ATT by taking the difference of means. We estimate the impact of the new tax on Sydney ticket sales to be a decrease of about 2.25.

@@ -1,0 +1,69 @@
+---
+title: "Instrumental Variables"
+output: html-notebook
+editor_options: 
+  chunk_output_type: console
+---
+
+An online retailer is interested in studying the effect of offering video streaming services on the average amount of money that users spend on the platform. The retailer gives its paying members access to exclusive video content at no additional expense. The online retailer then starts an email campaign for a random subset of users to encourage them to use the streaming services.
+
+The retailer tracks the amount of money spent by its users in a year and compiles the following variables into a dataframe named video_df:
+
+- email: whether or not an individual received the email campaign (received email vs. did not receive email).
+- streaming: whether or not an individual used the streaming services (used service vs. did not use service).
+- spending: the amount of money spent by an individual in a year (dollars)
+
+There are many factors that could influence whether or not an individual on the platform uses the video streaming services. For example, some individuals might have more free time to watch videos. Other individuals might not be interested in the content on the platform. The online retailer has no way to capture this information.
+
+Receiving the email does not directly impact how much someone spends — it only impacts the likelihood of using the streaming platform. Thus, the instrument is whether or not the individual was emailed.
+
+A file named video_data.csv has been provided which contains data collected by the online retailer.
+
+```{r, message=FALSE}
+# import libraries
+library(AER)
+
+# import dataset/s
+video_df <- read.csv("video_data.csv")
+video_df2 <- read.csv("video_data2.csv")
+head(video_df)
+```
+
+## IV Estimation
+
+```{r}
+# OLS model
+ols_model <- lm(spending ~ streaming, data = video_df)
+# print OLS coefficients
+summary(ols_model)
+```
+
+```{r}
+# 2SLS model
+iv_mod <- ivreg(spending ~ streaming | email, data = video_df)
+summary(iv_mod)
+```
+
+In this situation, the magnitude, sign and significance of the coefficients are all similar between the regular OLS and two-stage least-squares regression models. However, the standard errors in the latter model are much larger, which indicates that it'll be less likely that the treatment coefficient will be found to be significantly different from 0.
+
+## Interpretation and Considerations
+
+Imagine that the online retailer decides to pay a search engine company to display an ad for the retailer’s video streaming services above the results when anyone uses search terms like “video streaming” or “streaming”. Seeing such an ad wouldn’t directly increase the amount of money a user spends on the online retailer’s website. However, the ad could make a user more likely to use the retailer’s video streaming services. Thus, the targeted ads could act as an instrumental variable.
+
+```{r, message=FALSE}
+# 2SLS model with new instrument
+iv_mod2 <- ivreg(spending ~ streaming | ads, data = video_df2)
+```
+
+```{r}
+# Print summaries for both models
+print(summary(iv_mod))
+print(summary(iv_mod2))
+```
+
+In the second model, the streaming coefficient of 20.08 is neither accurate nor precise, as highlighted by the large standard error. In contrast, the streaming coefficient of 38.056 is accurate and precise (and statistically significant) in the initial model.
+
+## Conclusion
+
+The 2SLS regression model using the email campaign as an instrument produced a CACE estimate of 38.056. As long as our assumptions hold, this means that using video streaming services increased spending by an average of about 38 dollars. Since this is the CACE, it only applies to compliers: those who used the streaming services because they received the email, but who would not have used streaming otherwise.
+

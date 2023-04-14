@@ -1,0 +1,223 @@
+---
+title: "Propensity Scores"
+output: html-notebook
+---
+
+Imagine that you are working for a hospital and you are tasked with figuring out why some patients stay longer than others. You decide to investigate heart health first, and will look at ejection fraction. Ejection fraction (EF) is a measure of how much blood the heart pumps with each beat. A low EF may indicate poor heart health.
+
+You have access to a dataset called los_data, which contains the following variables related to the health of 1,000 hospital patients who were admitted to the cardiology unit:
+
+- age — Age (years)
+- cholesterol — Indicates whether the patient has high cholesterol (0 = normal cholesterol; 1 = high cholesterol)
+- heart_attack — History of heart attack (0 = no heart attack history; 1 = previous heart attack)
+- low_ef — Low ejection fraction (0 = normal ejection fraction; 1 = low ejection fraction)
+- hospital_los — Length of hospital stay (days)
+
+With this dataset, we will use propensity score methods to determine the causal effect of having a low ejection fraction on how long patients stay in the hospital. 
+
+## Visual Check of Numeric Variables
+
+```{r, message=FALSE}
+# import libraries
+library(cobalt)
+library(WeightIt)
+library(lmtest)
+library(sandwich)
+
+# import dataset/s
+los_data <- read.csv("los_data.csv")
+los_sample <- read.csv("los_sample.csv")
+```
+
+```{r}
+# Create a balance plot for age
+age_plot <- bal.plot(x = low_ef ~ age,
+  data = los_data,
+  var.name = "age")
+print(age_plot)
+```
+
+The distributions in the plot appear to be relatively similar between the treatment groups, indicating reasonable balance. The low ejection fraction group has a slightly higher average age than the normal ejection fraction group.
+
+## Visual Check of Categorical Variables
+
+```{r}
+# Create a balance plot for heart_attack
+heart_plot <- bal.plot(
+  x = low_ef ~ heart_attack, #formula
+  data = los_data, #dataset
+  var.name = "heart_attack", #variable 
+  colors = c("#E69F00", "#009E73") #set fill colors 
+)
+print(heart_plot)
+```
+
+This plot indicates that the ratio of no heart attack history to heart attack history is much larger for the control group (orange) than the treatment group (green). This indicates that there may be differences between the treatment and control groups for some variables, but not others.
+
+## Checking Balance Numerically
+
+```{r, message=FALSE}
+# Create a balance table here
+bt <- bal.tab(x = low_ef ~ age + cholesterol + heart_attack,
+  data = los_data,
+  disp.v.ratio = TRUE,
+  binary = "std")
+print(bt)
+```
+
+The output shows that `age` has a standardised mean difference (SMD) of 0.5575 and a variance ratio of 1.1072 between the treatment and control groups. `cholesterol` and `heart_attack` have SMDs of 0.5238 and 0.6162 respectively. All three fall outside the range of -0.1 and 0.1, which suggest an imbalance between the two groups. The variance ratio of `age` is within the range of 0.5 and 2.0.
+
+## Modelling Propensity Scores
+
+```{r}
+# Predict ejection fraction from age and cholesterol
+ef_model <- glm(
+  low_ef ~ age + cholesterol,
+  data = los_data,
+  family = "binomial"
+)
+print(ef_model)
+```
+
+```{r}
+# View the histogram
+ef_ps <- predict(ef_model, type = "response")
+ef_hist <- hist(ef_ps)
+```
+
+The histogram indicates that the model produced a lot of low probabilities of being treated for our observations. This makes sense given that the bal.tab output in the previous section showed us we had 716 patients in the normal ejection fraction group and only 284 in the low ejection fraction group.
+
+## Propensity Score Weighting
+
+```{r}
+# Print the dataset
+print(los_sample)
+```
+
+Notice how the dataset is arranged by treatment group, with propensity scores in ascending order within each group.
+
+```{r}
+# Calculate IPTW weights for the ATE
+los_sample$ATE_weight <- ifelse(
+  los_sample$low_ef == 0,
+  1 / (1 - los_sample$ps),
+  1 / los_sample$ps
+)
+
+# Print the dataset
+print(los_sample)
+```
+
+Why is the range of ATE weights not as large for `low_ef = 0` in this sample?
+
+Likely because there are no patients in the control group with a high propensity score, and therefore none are given very high weights. In contrast, there are patients in the treatment group with low and high propensity scores and hence the range of weights is wider.
+
+```{r}
+# Calculate IPTW weights for the ATT
+los_sample$ATT_weight <- ifelse(
+  los_sample$low_ef == 0, 
+  los_sample$ps / (1 - los_sample$ps), 
+  1
+)
+
+# Print the dataset
+print(los_sample)
+```
+
+How does the weighting compare? What's different between the ATT and ATE weights?
+
+The ATT weights for the control fall within a relatively narrow range, like the ATE weights. However, the ATT weights for the treatment are all 1.
+
+## Performing IPTW in R
+
+IPTW can be performed in R with the weightit() function from the WeightIt package. There are several key arguments to this function that allow us to tweak how weighting is performed.
+
+- formula—represents the propensity score model to use.
+- method—determines the weighting method that will be used. While there are various options, we will use “ps” to perform IPTW using logistic regression.
+- estimand—specifies the desired treatment effect estimand: “ATE” for average treatment effect, “ATC” for average treatment effect on the controls, or “ATT” for average treatment effect on the treated.
+
+The weightit() function models the propensity scores and creates the IPTW weights in one step.
+
+```{r}
+# Create a weightit object called iptw_ef
+iptw_ef <- weightit(
+  low_ef ~ age + cholesterol,
+  data = los_data,
+  method = "ps",
+  estimand = "ATT"
+)
+print(iptw_ef)
+```
+
+## Rechecking Overlap and Balance
+
+```{r}
+# Create balance plot
+ps_bal <- bal.plot(
+  iptw_ef,
+  var.name = "prop.score",
+  which = "both"
+)
+print(ps_bal)
+```
+
+The distributions of propensity scores look similar after IPTW, but we should also check the balance of individual variables.
+
+```{r}
+# Create a Love plot
+ps_love <- love.plot(
+  iptw_ef,
+  binary = "std",
+  thresholds = c(m = 0.1)
+)
+print(ps_love)
+```
+
+Based on this plot, it appears as though the propensity score weighting was successful: the SMDs between groups are inside the +-0.1 cutoffs for all the variables and the propensity scores.
+
+## Refining the Propensity Score Model
+
+Imagine that the plots in the previous step weren't satisfactory and we needed to refine the propensity score model.
+
+```{r}
+# Update formula
+iptw_ef2 <- weightit(
+ formula = low_ef ~ age + cholesterol + heart_attack,
+ data = los_data,
+ estimand = "ATT",
+ method = "ps"
+)
+print(iptw_ef2)
+```
+
+```{r}
+# Create Love plot
+love_update <- love.plot(
+  iptw_ef2,
+  binary = "std",
+  thresholds = c(m = 0.1)
+)
+print(love_update)
+```
+
+## Estimating Causal Effects
+
+```{r}
+# Create outcome model
+outcome_mod <- glm(
+  hospital_los ~ low_ef + age + cholesterol + heart_attack,
+  data = los_data,
+  weights = iptw_ef2$weights
+)
+```
+
+```{r}
+# Get coefficients with robust standard errors
+att_robust <- coeftest(
+  outcome_mod,
+  vcov. = vcovHC
+)
+print(att_robust)
+```
+
+The output above indicates that if we have met the assumptions for IPTW, we can conclude that low ejection fraction causes a typical cardiology patient to stay in the hospital about 1.2 days longer than if they did not have a low ejection fraction.
