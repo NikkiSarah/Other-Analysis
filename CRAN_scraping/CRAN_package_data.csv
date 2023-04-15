@@ -1,0 +1,598 @@
+webpage,package_title,description
+https://CRAN.R-project.org/package=LDAShiny,LDAShiny: User-Friendly Interface for Review of Scientific Literature,"Contains the development of a tool that provides a
+    web-based graphical user interface (GUI) to perform a review of the
+    scientific literature under the Bayesian approach of Latent Dirichlet
+    Allocation (LDA)and machine learning algorithms. The application
+    methodology is framed by the well known procedures in topic modelling
+    on how to clean and process data. Contains methods described by 
+    Blei, David M., Andrew Y. Ng, and Michael I. Jordan (2003) 
+    <,> 
+    Allocation""; Thomas L. Griffiths and Mark Steyvers (2004) 
+    <,> ; Xiong Hui, et al (2019) 
+    <,>.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=languageR,"languageR: Analyzing Linguistic Data: A Practical Introduction to
+Statistics","Data sets exemplifying statistical methods, and some
+        facilitatory utility functions used in “Analyzing Linguistic
+        Data: A practical introduction to statistics using R”,
+        Cambridge University Press, 2008.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=english,english: Translate Integers into English,"Allow numbers to be presented in an English language
+        version, one, two, three, ...  Ordinals are also available,
+        first, second, third, ... and indefinite article choice, ""a"" or ""an"".,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=lda,lda: Collapsed Gibbs Sampling Methods for Topic Models,"Implements latent Dirichlet allocation (LDA)
+	     and related models.  This includes (but is not limited
+	     to) sLDA, corrLDA, and the mixed-membership stochastic
+	     blockmodel.  Inference for all of these models is
+	     implemented via a fast collapsed Gibbs sampler written
+	     in C.  Utility functions for reading/writing data
+	     typically used in topic models, as well as tools for
+	     examining posterior distributions are also included.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=janeaustenr,janeaustenr: Jane Austen's Complete Novels,"Full texts for Jane Austen's 6 completed novels, ready for text
+    analysis. These novels are ""Sense and Sensibility"", ""Pride and Prejudice"",
+    ""Mansfield Park"", ""Emma"", ""Northanger Abbey"", and ""Persuasion"".,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=corpora,corpora: Statistics and Data Sets for Corpus Frequency Data,"Utility functions for the statistical analysis of corpus frequency data.
+        This package is a companion to the open-source course ""Statistical Inference: 
+        A Gentle Introduction for Computational Linguists and Similar Creatures"" ('SIGIL').,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=corporaexplorer,corporaexplorer: A 'Shiny' App for Exploration of Text Collections,"Facilitates dynamic exploration of text collections through an
+    intuitive graphical user interface and the power of regular expressions.
+    The package contains 1) a helper function to convert a data frame to a
+    'corporaexplorerobject', 2) a 'Shiny' app for fast and flexible exploration
+    of a 'corporaexplorerobject', and 3) a 'Shiny' app for simple
+    retrieval/extraction of documents from a 'corporaexplorerobject' in a
+    reading-friendly format. The package also includes demo apps with which
+    one can explore Jane Austen's novels and the State of the Union Addresses
+    (data from the 'janeaustenr' and 'sotu' packages respectively).,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=keyATM,keyATM: Keyword Assisted Topic Model,"Fits keyword assisted topic models (keyATM) using collapsed Gibbs samplers. The keyATM combines the latent dirichlet allocation (LDA) models with a small number of keywords selected by researchers in order to improve the interpretability and topic classification of the LDA. The keyATM can also incorporate covariates and directly model time trends. The keyATM is proposed in Eshima, Imai, and Sasaki (2020) <,>.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=koRpus.lang.en,koRpus.lang.en: Language Support for 'koRpus' Package: English,"Adds support for the English language to the 'koRpus' package. To ask for help, report bugs, suggest feature improvements, or discuss the global development of the
+                    package, please consider subscribing to the koRpus-dev mailing list (<,>).,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=koRpus,"koRpus: Text Analysis with Emphasis on POS Tagging, Readability, and
+Lexical Diversity","A set of tools to analyze texts. Includes, amongst others, functions for
+          automatic language detection, hyphenation, several indices of lexical diversity
+          (e.g., type token ratio, HD-D/vocd-D, MTLD) and readability (e.g., Flesch,
+          SMOG, LIX, Dale-Chall). Basic import functions for language corpora are also
+          provided, to enable frequency analyses (supports Celex and Leipzig Corpora
+          Collection file formats) and measures like tf-idf. Note: For full functionality
+          a local installation of TreeTagger is recommended. It is also recommended to
+          not load this package directly, but by loading one of the available language
+          support packages from the 'l10n' repository
+          <,>. 'koRpus' also includes a plugin
+          for the R GUI and IDE RKWard, providing graphical dialogs for its basic
+          features. The respective R package 'rkward' cannot be installed directly from a
+          repository, as it is a part of RKWard. To make full use of this feature, please
+          install RKWard from <,> (plugins are detected
+          automatically). Due to some restrictions on CRAN, the full package sources are
+          only available from the project homepage. To ask for help, report bugs, request
+          features, or discuss the development of the package, please subscribe to the
+          koRpus-dev mailing list (<,>).,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=ldatuning,ldatuning: Tuning of the Latent Dirichlet Allocation Models Parameters,"For this first version only metrics to estimate the best fitting
+    number of topics are implemented.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=lexicon,lexicon: Lexicons for Text Analysis,"A collection of lexical hash tables, dictionaries, and word lists.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=NLP,NLP: Natural Language Processing Infrastructure,"Basic classes and methods for Natural Language Processing.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=oolong,oolong: Create Validation Tests for Automated Content Analysis,"Intended to create standard human-in-the-loop validity tests for typical automated content analysis such as topic modeling and dictionary-based methods. This package offers a standard workflow with functions to prepare, administer and evaluate a human-in-the-loop validity test. This package provides functions for validating topic models using word intrusion, topic intrusion (Chang et al. 2009,  <,>) and word set intrusion (Ying et al. Forthcoming) tests. This package also provides functions for generating gold-standard data which are useful for validating dictionary-based methods. The default settings of all generated tests match those suggested in Chang et al. (2009) and Song et al. (2020) <,>.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=openNLPdata,openNLPdata: Apache OpenNLP Jars and Basic English Language Models,"Apache OpenNLP jars and basic English language models.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=openNLP,openNLP: Apache OpenNLP Tools Interface,"An interface to the Apache OpenNLP tools (version 1.5.3).
+  The Apache OpenNLP library is a machine learning based toolkit for the
+  processing of natural language text written in Java.
+  It supports the most common NLP tasks, such as tokenization, sentence
+  segmentation, part-of-speech tagging, named entity extraction, chunking,
+  parsing, and coreference resolution.
+  See <,> for more information.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=qdap,"qdap: Bridging the Gap Between Qualitative Data and Quantitative
+Analysis","Automates many of the tasks associated with quantitative discourse analysis of transcripts containing discourse
+              including frequency counts of sentence types, words, sentences, turns of talk, syllables and other assorted
+              analysis tasks. The package provides parsing tools for preparing transcript data. Many functions enable the user
+              to aggregate data by any number of grouping variables, providing analysis and seamless integration with other R
+              packages that undertake higher level analysis and visualization of text. This affords the user a more efficient
+              and targeted analysis. 'qdap' is designed for transcript analysis, however, many functions are applicable to other
+              areas of Text Mining/ Natural Language Processing.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=qdapDictionaries,qdapDictionaries: Dictionaries and Word Lists for the 'qdap' Package,"A collection of text analysis dictionaries and word lists for use with
+        the 'qdap' package.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=qdapRegex,"qdapRegex: Regular Expression Removal, Extraction, and Replacement Tools","A collection of regular expression tools associated with
+        the 'qdap' package that may be useful outside of the context of
+        discourse analysis. Tools include
+        removal/extraction/replacement of abbreviations, dates, dollar
+        amounts, email addresses, hash tags, numbers, percentages,
+        citations, person tags, phone numbers, times, and zip codes.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=qdapTools,qdapTools: Tools for the 'qdap' Package,"A collection of tools associated with the 'qdap' package that may be useful outside of the
+            context of text analysis.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=quanteda,quanteda: Quantitative Analysis of Textual Data,"A fast, flexible, and comprehensive framework for 
+    quantitative text analysis in R.  Provides functionality for corpus management,
+    creating and manipulating tokens and ngrams, exploring keywords in context, 
+    forming and manipulating sparse matrices
+    of documents by features and feature co-occurrences, analyzing keywords, computing feature similarities and
+    distances, applying content dictionaries, applying supervised and unsupervised machine learning, 
+    visually representing text and text analyses, and more. ,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=sentimentr,sentimentr: Calculate Text Polarity Sentiment,"Calculate text polarity sentiment at the sentence level and
+         optionally aggregate by rows or grouping variable(s).,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=SnowballC,SnowballC: Snowball Stemmers Based on the C 'libstemmer' UTF-8 Library,"An R interface to the C 'libstemmer' library that implements
+  Porter's word stemming algorithm for collapsing words to a common
+  root to aid comparison of vocabulary. Currently supported languages are
+  Danish, Dutch, English, Finnish, French, German, Hungarian, Italian,
+  Norwegian, Portuguese, Romanian, Russian, Spanish, Swedish
+  and Turkish.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=spacyr,spacyr: Wrapper to the 'spaCy' 'NLP' Library,"An R wrapper to the 'Python' 'spaCy' 'NLP' library,
+    from <,>.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=stopwords,stopwords: Multilingual Stopword Lists,"Provides multiple sources of stopwords, for use in text analysis and natural language processing.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=stringdist,"stringdist: Approximate String Matching, Fuzzy Text Search, and String
+Distance Functions","Implements an approximate string matching version of R's native
+    'match' function. Also offers fuzzy text search based on various string
+     distance measures. Can calculate various string distances based on edits
+    (Damerau-Levenshtein, Hamming, Levenshtein, optimal sting alignment), qgrams (q-
+    gram, cosine, jaccard distance) or heuristic metrics (Jaro, Jaro-Winkler). An
+    implementation of soundex is provided as well. Distances can be computed between
+    character vectors while taking proper care of encoding or between integer
+    vectors representing generic sequences. This package is built for speed and
+    runs in parallel by using 'openMP'. An API for C or C++ is exposed as well.
+    Reference: MPJ van der Loo (2014) <,>.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=stringi,stringi: Character String Processing Facilities,"A multitude of character string/text/natural language
+    processing tools: pattern searching (e.g., with 'Java'-like regular
+    expressions or the 'Unicode' collation algorithm), random string generation,
+    case mapping, string transliteration, concatenation, sorting, padding,
+    wrapping, Unicode normalisation, date-time formatting and parsing,
+    and many more. They are fast, consistent, convenient, and -
+    thanks to 'ICU' (International Components for Unicode) -
+    portable across all locales and platforms.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=stringr,"stringr: Simple, Consistent Wrappers for Common String Operations","A consistent, simple and easy to use set of
+    wrappers around the fantastic 'stringi' package. All function and
+    argument names (and positions) are consistent, all functions deal with
+    ""NA""'s and zero length vectors in the same way, and the output from
+    one function is easy to feed into the input of another.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=sylly,sylly: Hyphenation and Syllable Counting for Text Analysis,"Provides the hyphenation algorithm used for 'TeX'/'LaTeX' and similar software, as proposed by Liang (1983, <,>). Mainly contains the
+                    function hyphen() to be used for hyphenation/syllable counting of text objects. It was originally developed for and part of the 'koRpus' package, but later
+                    released as a separate package so it's lighter to have this particular functionality available for other packages. Support for various languages needs be added
+                    on-the-fly or by plugin packages (<,>); this package does not include any language specific data. Due to some restrictions
+                    on CRAN, the full package sources are only available from the project homepage. To ask for help, report bugs, request features, or discuss the development of
+                    the package, please subscribe to the koRpus-dev mailing list (<,>).,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=sylly.en,sylly.en: Language Support for 'sylly' Package: English,"Adds support for the English language to the 'sylly'
+        package. Due to some restrictions on CRAN, the full package
+        sources are only available from the project homepage. To ask
+        for help, report bugs, suggest feature improvements, or discuss
+        the global development of the package, please consider
+        subscribing to the koRpus-dev mailing list
+        (<,>).,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=syuzhet,syuzhet: Extracts Sentiment and Sentiment-Derived Plot Arcs from Text,"Extracts sentiment and sentiment-derived plot arcs
+    from text using a variety of sentiment dictionaries conveniently
+    packaged for consumption by R users.  Implemented dictionaries include
+    ""syuzhet"" (default) developed in the Nebraska Literary Lab
+    ""afinn"" developed by Finn Årup Nielsen, ""bing"" developed by Minqing Hu
+    and Bing Liu, and ""nrc"" developed by Mohammad, Saif M. and Turney, Peter D.
+    Applicable references are available in README.md and in the documentation
+    for the ""get_sentiment"" function.  The package also provides a hack for
+    implementing Stanford's coreNLP sentiment parser. The package provides
+    several methods for plot arc normalization.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=tau,tau: Text Analysis Utilities,"Utilities for text analysis.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=text2vec,text2vec: Modern Text Mining Framework for R,"Fast and memory-friendly tools for text vectorization, topic
+    modeling (LDA, LSA), word embeddings (GloVe), similarities. This package
+    provides a source-agnostic streaming API, which allows researchers to perform
+    analysis of collections of documents which are larger than available RAM. All
+    core functions are parallelized to benefit from multicore machines.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=textcat,textcat: N-Gram Based Text Categorization,"Text categorization based on n-grams.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=textclean,textclean: Text Cleaning Tools,"Tools to clean and process text.  Tools are geared at checking for substrings that
+          are not optimal for analysis and replacing or removing them (normalizing) with more
+          analysis friendly substrings (see Sproat, Black, Chen, Kumar, Ostendorf, & Richards
+          (2001) <,>) or extracting them into new variables. For
+          example, emoticons are often used in text but not always easily handled by analysis
+          algorithms.  The replace_emoticon() function replaces emoticons with word
+          equivalents.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=textdata,textdata: Download and Load Various Text Datasets,"Provides a framework to download, parse, and store text datasets
+    on the disk and load them when needed. Includes various sentiment lexicons
+    and labeled text data sets for classification and analysis.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=textir,textir: Inverse Regression for Text Analysis,"Multinomial (inverse) regression inference for text documents and associated attributes.  For details see: Taddy (2013 JASA) Multinomial Inverse Regression for Text Analysis <,> and Taddy (2015, AoAS), Distributed Multinomial Regression, <,>. A minimalist partial least squares routine is also included.  Note that the topic modeling capability of earlier 'textir' is now a separate package, 'maptpx'.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=textplot,textplot: Text Plots,"Visualise complex relations in texts. This is done by providing functionalities for displaying 
+    text co-occurrence networks, text correlation networks, dependency relationships as well as text clustering. 
+    Feel free to join the effort of providing interesting text visualisations.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=textplot,textplot: Text Plots,"Visualise complex relations in texts. This is done by providing functionalities for displaying 
+    text co-occurrence networks, text correlation networks, dependency relationships as well as text clustering. 
+    Feel free to join the effort of providing interesting text visualisations.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=textrank,textrank: Summarize Text by Ranking Sentences and Finding Keywords,"The 'textrank' algorithm is an extension of the 'Pagerank' algorithm for text. The algorithm allows to summarize text by calculating how sentences are related to one another. This is done by looking at overlapping terminology used in sentences in order to set up links between sentences. The resulting sentence network is next plugged into the 'Pagerank' algorithm which identifies the most important sentences in your text and ranks them. 
+    In a similar way 'textrank' can also be used to extract keywords. A word network is constructed by looking if words are following one another. On top of that network the 'Pagerank' algorithm is applied to extract relevant words after which relevant words which are following one another are combined to get keywords.  
+    More information can be found in the paper from Mihalcea, Rada & Tarau, Paul (2004) <,>.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=textshape,textshape: Tools for Reshaping Text,"Tools that can be used to reshape and restructure text data.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=textstem,textstem: Tools for Stemming and Lemmatizing Text,"Tools that stem and lemmatize text.  Stemming is a process that removes
+         endings such as affixes.  Lemmatization is the process of grouping inflected
+         forms together as a single base form.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=tidyselect,tidyselect: Select from a Set of Strings,"A backend for the selecting functions of the 'tidyverse'.
+    It makes it easy to implement select-like functions in your own
+    packages in a way that is consistent with other 'tidyverse'
+    interfaces for selection.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=tidytext,"tidytext: Text Mining using 'dplyr', 'ggplot2', and Other Tidy Tools","Using tidy data principles can make many text mining tasks easier, 
+    more effective, and consistent with tools already in wide use. Much of the 
+    infrastructure needed for text mining with tidy data frames already exists 
+    in packages like 'dplyr', 'broom', 'tidyr', and 'ggplot2'. In this package, 
+    we provide functions and supporting data sets to allow conversion of text 
+    to and from tidy formats, and to switch seamlessly between tidy tools and 
+    existing text mining packages.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=tm,tm: Text Mining Package,"A framework for text mining applications within R.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=tmap,tmap: Thematic Maps,"Thematic maps are geographical maps in which spatial data distributions are visualized. This package offers a flexible, layer-based, and easy to use approach to create thematic maps, such as choropleths and bubble maps.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=tmaptools,tmaptools: Thematic Map Tools,"Set of tools for reading and processing spatial data. The aim is to supply the workflow to create thematic maps. This package also facilitates 'tmap', the package for visualizing thematic maps.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=tokenizers,"tokenizers: Fast, Consistent Tokenization of Natural Language Text","Convert natural language text into tokens. Includes tokenizers for
+    shingled n-grams, skip n-grams, words, word stems, sentences, paragraphs,
+    characters, shingled characters, lines, tweets, Penn Treebank, regular
+    expressions, as well as functions for counting characters, words, and sentences,
+    and a function for splitting longer texts into separate documents, each with
+    the same number of words.  The tokenizers have a consistent interface, and
+    the package is built on the 'stringi' and 'Rcpp' packages for  fast
+    yet correct tokenization in 'UTF-8'. ,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=topicdoc,topicdoc: Topic-Specific Diagnostics for LDA and CTM Topic Models,"Calculates topic-specific diagnostics (e.g. mean token length, exclusivity) for 
+    Latent Dirichlet Allocation and Correlated Topic Models fit using the 'topicmodels' package.
+    For more details, see Chapter 12 in Airoldi et al. (2014, ISBN:9781466504080), 
+    pp 262-272 Mimno et al. (2011, ISBN:9781937284114), and Bischof et al. (2014) <,>.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=topicmodels,topicmodels: Topic Models,"Provides an interface to the C code for Latent Dirichlet
+	     Allocation (LDA) models and Correlated Topics Models
+	     (CTM) by David M. Blei and co-authors and the C++ code
+	     for fitting LDA models using Gibbs sampling by Xuan-Hieu
+	     Phan and co-authors.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=udpipe,"udpipe: Tokenization, Parts of Speech Tagging, Lemmatization and
+Dependency Parsing with the 'UDPipe' 'NLP' Toolkit","This natural language processing toolkit provides language-agnostic
+    'tokenization', 'parts of speech tagging', 'lemmatization' and 'dependency
+    parsing' of raw text. Next to text parsing, the package also allows you to train
+    annotation models based on data of 'treebanks' in 'CoNLL-U' format as provided
+    at <,>. The techniques are explained
+    in detail in the paper: 'Tokenizing, POS Tagging, Lemmatizing and Parsing UD 2.0
+    with UDPipe', available at <,>. 
+    The toolkit also contains functionalities for commonly used data manipulations on texts 
+    which are enriched with the output of the parser. Namely functionalities and algorithms 
+    for collocations, token co-occurrence, document term matrix handling, 
+    term frequency inverse document frequency calculations,
+    information retrieval metrics (Okapi BM25), handling of multi-word expressions,
+    keyword detection (Rapid Automatic Keyword Extraction, noun phrase extraction, syntactical patterns) 
+    sentiment scoring and semantic similarity analysis.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=udpipe,"udpipe: Tokenization, Parts of Speech Tagging, Lemmatization and
+Dependency Parsing with the 'UDPipe' 'NLP' Toolkit","This natural language processing toolkit provides language-agnostic
+    'tokenization', 'parts of speech tagging', 'lemmatization' and 'dependency
+    parsing' of raw text. Next to text parsing, the package also allows you to train
+    annotation models based on data of 'treebanks' in 'CoNLL-U' format as provided
+    at <,>. The techniques are explained
+    in detail in the paper: 'Tokenizing, POS Tagging, Lemmatizing and Parsing UD 2.0
+    with UDPipe', available at <,>. 
+    The toolkit also contains functionalities for commonly used data manipulations on texts 
+    which are enriched with the output of the parser. Namely functionalities and algorithms 
+    for collocations, token co-occurrence, document term matrix handling, 
+    term frequency inverse document frequency calculations,
+    information retrieval metrics (Okapi BM25), handling of multi-word expressions,
+    keyword detection (Rapid Automatic Keyword Extraction, noun phrase extraction, syntactical patterns) 
+    sentiment scoring and semantic similarity analysis.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=word2vec,word2vec: Distributed Representations of Words,"Learn vector representations of words by continuous bag of words and skip-gram implementations of the 'word2vec' algorithm. 
+    The techniques are detailed in the paper ""Distributed Representations of Words and Phrases and their Compositionality"" by Mikolov et al. (2013), available at <,>.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=wordcloud,wordcloud: Word Clouds,"Functionality to create pretty word clouds, visualize differences and similarity between documents, and avoid over-plotting in scatter plots with text.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=wordcloud2,wordcloud2: Create Word Cloud by 'htmlwidget',"A fast visualization tool for creating wordcloud
+    by using 'wordcloud2.js'. 'wordcloud2.js' is a JavaScript library to create 
+    wordle presentation on 2D canvas or HTML <,>.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=readtext,readtext: Import and Handling for Plain and Formatted Text Files,"Functions for importing and handling text files and formatted text
+    files with additional meta-data, such including '.csv', '.tab', '.json', '.xml',
+    '.html', '.pdf', '.doc', '.docx', '.rtf', '.xls', '.xlsx', and others.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=antiword,antiword: Extract Text from Microsoft Word Documents,"Wraps the 'AntiWord' utility to extract text from Microsoft
+    Word documents. The utility only supports the old 'doc' format, not the 
+    new xml based 'docx' format. Use the 'xml2' package to read the latter.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=readtext,readtext: Import and Handling for Plain and Formatted Text Files,"Functions for importing and handling text files and formatted text
+    files with additional meta-data, such including '.csv', '.tab', '.json', '.xml',
+    '.html', '.pdf', '.doc', '.docx', '.rtf', '.xls', '.xlsx', and others.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=pdftools,"pdftools: Text Extraction, Rendering and Converting of PDF Documents","Utilities based on 'libpoppler' for extracting text, fonts, attachments and 
+    metadata from a PDF file. Also supports high quality rendering of PDF documents into
+    PNG, JPEG, TIFF format, or into raw bitmap vectors for further processing in R.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=spelling,spelling: Tools for Spell Checking in R,"Spell checking common document formats including latex, markdown, manual pages,
+    and description files. Includes utilities to automate checking of documentation and 
+    vignettes as a unit test during 'R CMD check'. Both British and American English are 
+    supported out of the box and other languages can be added. In addition, packages may
+    define a 'wordlist' to allow custom terminology without having to abuse punctuation.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=cheatR,cheatR: Catch Cheaters,"A set of functions to compare texts for similarity, and plot a graph of similarities among the compared texts. These functions were originally developed for detection of overlap in course hand-in.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=ngram,ngram: Fast n-Gram 'Tokenization',"An n-gram is a sequence of n ""words"" taken, in order, from a
+    body of text.  This is a collection of utilities for creating,
+    displaying, summarizing, and ""babbling"" n-grams.  The
+    'tokenization' and ""babbling"" are handled by very efficient C
+    code, which can even be built as its own standalone library.
+    The babbler is a simple Markov chain.  The package also offers
+    a vignette with complete example 'workflows' and information about
+    the utilities offered in the package.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=textreadr,textreadr: Read Text Documents into R,"A small collection of convenience tools for reading text documents into R.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=textfeatures,textfeatures: Extracts Features from Text,"A tool for extracting some generic features (e.g., number of
+    words, line breaks, characters per word, URLs, lower case, upper case,
+    commas, periods, exclamation points, etc.) from strings of text.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=textrecipes,textrecipes: Extra 'Recipes' for Text Processing,"Converting text to numerical features requires
+    specifically created procedures, which are implemented as steps
+    according to the 'recipes' package. These steps allows for
+    tokenization, filtering, counting (tf and tfidf) and feature hashing.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=textmineR,textmineR: Functions for Text Mining and Topic Modeling,"An aid for text mining in R, with a syntax that
+    should be familiar to experienced R users. Provides a wrapper for several 
+    topic models that take similarly-formatted input and give similarly-formatted
+    output. Has additional functionality for analyzing and diagnostics for
+    topic models.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=LDAShiny,LDAShiny: User-Friendly Interface for Review of Scientific Literature,"Contains the development of a tool that provides a
+    web-based graphical user interface (GUI) to perform a review of the
+    scientific literature under the Bayesian approach of Latent Dirichlet
+    Allocation (LDA)and machine learning algorithms. The application
+    methodology is framed by the well known procedures in topic modelling
+    on how to clean and process data. Contains methods described by 
+    Blei, David M., Andrew Y. Ng, and Michael I. Jordan (2003) 
+    <,> 
+    Allocation""; Thomas L. Griffiths and Mark Steyvers (2004) 
+    <,> ; Xiong Hui, et al (2019) 
+    <,>.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=tidylda,tidylda: Latent Dirichlet Allocation Using 'tidyverse' Conventions,"Implements an algorithm for Latent Dirichlet
+    Allocation (LDA), Blei et at. (2003) <,>,
+    using style conventions from the 'tidyverse',
+    Wickham et al. (2019)<,>,
+    and 'tidymodels', Kuhn et al.<,>.
+    Fitting is done via collapsed Gibbs sampling.
+    Also implements several novel features for LDA such as guided models and
+    transfer learning based on ongoing and, as yet, unpublished research.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=wordsalad,wordsalad: Provide Tools to Extract and Analyze Word Vectors,"Provides access to various word embedding methods (GloVe, 
+    fasttext and word2vec) to extract word vectors using a unified framework to
+    increase reproducibility and correctness.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=fastTextR,fastTextR: An Interface to the 'fastText' Library,"An interface to the 'fastText' library
+	<,>. The package
+	can be used for text classification and to learn word vectors.
+	An example how to use 'fastTextR' can be found in the 'README' file.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=seededlda,seededlda: Seeded-LDA for Topic Modeling,"Implements the seeded-LDA model (Lu, Ott, Cardie & Tsou 2010) <,> using the quanteda package and the GibbsLDA++ library for semisupervised topic modeling. 
+    Seeded-LDA allows users to pre-define topics with keywords to perform theory-driven analysis of textual data in social sciences and humanities (Watanabe & Zhou 2020) <,>.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=stm,stm: Estimation of the Structural Topic Model,"The Structural Topic Model (STM) allows researchers 
+  to estimate topic models with document-level covariates. 
+  The package also includes tools for model selection, visualization,
+  and estimation of topic-covariate regressions. Methods developed in
+  Roberts et. al. (2014) <,> and 
+  Roberts et. al. (2016) <,>. Vignette
+  is Roberts et. al. (2019) <,>.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=quanteda.textmodels,quanteda.textmodels: Scaling Models and Classifiers for Textual Data,"Scaling models and classifiers for sparse matrix objects representing 
+    textual data in the form of a document-feature matrix.  Includes original 
+    implementations of 'Laver', 'Benoit', and Garry's (2003) <,>,
+    'Wordscores' model, Perry and 'Benoit's' (2017) <,> class affinity scaling model, 
+    and 'Slapin' and 'Proksch's' (2008) <,> 'wordfish'
+    model, as well as methods for correspondence analysis, latent semantic analysis,
+    and fast Naive Bayes and linear 'SVMs' specially designed for sparse textual data.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=lsa,lsa: Latent Semantic Analysis,"The basic idea of latent semantic analysis (LSA) is, 
+  that text do have a higher order (=latent semantic) structure which, 
+  however, is obscured by word usage (e.g. through the use of synonyms 
+  or polysemy). By using conceptual indices that are derived statistically 
+  via a truncated singular value decomposition (a two-mode factor analysis) 
+  over a given document-term matrix, this variability problem can be overcome. ,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=LSAfun,LSAfun: Applied Latent Semantic Analysis (LSA) Functions,"Provides functions that allow for convenient working
+    with latent semantic analysis (LSA) and other vector space models 
+	of semantics. For actually building a vector semantic space, use 
+	the package 'lsa' or other specialized software. Downloadable 
+	semantic spaces can be found here: <,>
+	A description of the LSA algorithm can be found in Landauer and Dumais (1997) 
+	<,> .,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=quanteda.textplots,quanteda.textplots: Plots for the Quantitative Analysis of Textual Data,"Plotting functions for visualising textual data.  Extends 'quanteda' and 
+   related packages with plot methods designed specifically for text data, textual statistics, 
+   and models fit to textual data. Plot types include word clouds, lexical dispersion plots, 
+   scaling plots, network visualisations, and word 'keyness' plots.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=quanteda.textstats,quanteda.textstats: Textual Statistics for the Quantitative Analysis of Textual Data,"Textual statistics functions formerly in the 'quanteda' package.
+    Textual statistics for characterizing and comparing textual data. Includes 
+    functions for measuring term and document frequency, the co-occurrence of 
+    words, similarity and distance between features and documents, feature entropy, 
+    keyword occurrence, readability, and lexical diversity.  These functions 
+    extend the 'quanteda' package and are specially designed for sparse textual data.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=nsyllable,nsyllable: Count Syllables in Character Vectors,"Counts syllables in character vectors for English words.  Imputes syllables as the number of vowel sequences for words not found.  ,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=svs,svs: Tools for Semantic Vector Spaces,"Various tools for semantic vector spaces, such as
+    correspondence analysis (simple, multiple and discriminant), latent
+    semantic analysis, probabilistic latent semantic analysis, non-negative
+    matrix factorization, latent class analysis, EM clustering, logratio
+	analysis and log-multiplicative (association) analysis. Furthermore,
+    there are specialized distance measures, plotting functions and some helper
+    functions.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=LSX,LSX: Model for Semisupervised Text Analysis Based on Word Embeddings,"A word embeddings-based semisupervised model for document scaling Watanabe (2020) <,>.
+    LSS allows users to analyze large and complex corpora on arbitrary dimensions with seed words exploiting efficiency of word embeddings (SVD, Glove).
+    It can generate word vectors on a users-provided corpus or incorporate a pre-trained word vectors.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=rainette,rainette: The Reinert Method for Textual Data Clustering,"An R implementation of the Reinert text clustering method. For more 
+    details about the algorithm see the included vignettes or Reinert (1990) 
+    <,>.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=ggwordcloud,ggwordcloud: A Word Cloud Geom for 'ggplot2',"Provides a word cloud text geom for 'ggplot2'. Texts
+    are placed so that they do not overlap as in 'ggrepel'.  The algorithm
+    used is a variation around the one of 'wordcloud2.js'.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=TextMiningGUI,TextMiningGUI: Text Mining GUI Interface,"Graphic interface for text analysis, implement a few methods such as biplots, correspondence analysis, co-occurrence, clustering, topic models, correlations and sentiments.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=sotu,sotu: United States Presidential State of the Union Addresses,"The President of the United States is constitutionally obligated to provide
+  a report known as the 'State of the Union'. The report summarizes the current challenges
+  facing the country and the president's upcoming legislative agenda. While historically
+  the State of the Union was often a written document, in recent decades it has always
+  taken the form of an oral address to a joint session of the United States Congress.
+  This package provides the raw text from every such address with the intention of
+  being used for meaningful examples of text analysis in R. The corpus is well suited
+  to the task as it is historically important, includes material intended to be read
+  and material intended to be spoken, and it falls in the public domain. As the corpus
+  spans over two centuries it is also a good test of how well various methods hold up
+  to the idiosyncrasies of historical texts. Associated data about each address, such
+  as the year, president, party, and format, are also included.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=cwbtools,"cwbtools: Tools to Create, Modify and Manage 'CWB' Corpora","The 'Corpus Workbench' ('CWB', <,>) offers a classic and mature
+ approach for working with large, linguistically and structurally annotated corpora. The 'CWB'
+ is memory efficient and its design makes running queries fast (Evert and Hardie 2011,
+ <,>). The 'cwbtools' package offers
+ pure R tools to create indexed corpus files as well as high-level wrappers for the original C
+ implementation of CWB as exposed by the 'RcppCWB' package
+ <,>. Additional functionality to add and
+ modify annotations of corpora from within R makes working with CWB indexed corpora
+ much more flexible and convenient. The 'cwbtools' package in combination with the R packages
+ 'RcppCWB' (<,>) and 'polmineR'
+ (<,>) offers a lightweight infrastructure
+ to support the combination of quantitative and qualitative approaches for working
+ with textual data.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=polmineR,polmineR: Verbs and Nouns for Corpus Analysis,"Package for corpus analysis using the Corpus Workbench 
+    ('CWB', <,>) as an efficient back end for indexing
+    and querying large corpora. The package offers functionality to flexibly create
+    subcorpora and to carry out basic statistical operations (count, co-occurrences
+    etc.). The original full text of documents can be reconstructed and inspected at
+    any time. Beyond that, the package is intended to serve as an interface to 
+    packages implementing advanced statistical procedures. Respective data structures
+    (document-term matrices, term-co-occurrence matrices etc.) can be created based 
+    on the indexed corpora.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=hunspell,"hunspell: High-Performance Stemmer, Tokenizer, and Spell Checker","Low level spell checker and morphological analyzer based on the 
+    famous 'hunspell' library <,>. The package can analyze
+    or check individual words as well as parse text, latex, html or xml documents.
+    For a more user-friendly interface use the 'spelling' package which builds on
+    this package to automate checking of files, documentation and vignettes in all
+    common formats.,Please use the canonical form
+,
+to link to this page."
+https://CRAN.R-project.org/package=acroname,acroname: Engine for Acronyms and Initialisms,"A tool for generating acronyms and initialisms from arbitrary text input.,Please use the canonical form
+,
+to link to this page."
